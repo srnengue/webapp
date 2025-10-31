@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アンケート一覧</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .survey-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .survey-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .survey-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .survey-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .survey-title {
+            color: #333;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .survey-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .survey-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 15px;
+        }
+
+        .survey-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-completed {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .start-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 15px;
+            padding: 60px 30px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state-text {
+            color: #666;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .survey-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 アンケート一覧</h1>
+            <button class="back-btn" onclick="goBack()">← 戻る</button>
+        </div>
+
+        <div id="surveyList" class="survey-grid"></div>
+    </div>
+
+    <script>
+        const surveys = [
+            {
+                id: 1,
+                title: '製品満足度調査',
+                description: '当社製品をご利用いただいているお客様の満足度を調査するアンケートです。',
+                questions: 5,
+                estimatedTime: '3分',
+                status: 'active',
+                completed: false
+            },
+            {
+                id: 2,
+                title: 'イベント参加アンケート',
+                description: '先日開催されたイベントに関するご意見・ご感想をお聞かせください。',
+                questions: 8,
+                estimatedTime: '5分',
+                status: 'active',
+                completed: false
+            },
+            {
+                id: 3,
+                title: 'ウェブサイト改善アンケート',
+                description: '当社ウェブサイトの使いやすさについてのアンケートです。',
+                questions: 6,
+                estimatedTime: '4分',
+                status: 'active',
+                completed: true
+            },
+            {
+                id: 4,
+                title: '新サービスに関する調査',
+                description: '新しく提供予定のサービスについて、皆様のニーズを調査させていただきます。',
+                questions: 10,
+                estimatedTime: '7分',
+                status: 'active',
+                completed: false
+            }
+        ];
+
+        function renderSurveys() {
+            const surveyList = document.getElementById('surveyList');
+            
+            if (surveys.length === 0) {
+                surveyList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <div class="empty-state-text">現在利用可能なアンケートはありません</div>
+                    </div>
+                `;
+                return;
+            }
+
+            surveyList.innerHTML = surveys.map(survey => `
+                <div class="survey-card" onclick="selectSurvey(${survey.id})">
+                    <div class="survey-title">${survey.title}</div>
+                    <div class="survey-description">${survey.description}</div>
+                    <div class="survey-meta">
+                        <span>📊 ${survey.questions}問</span>
+                        <span>⏱️ 約${survey.estimatedTime}</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <span class="survey-status ${survey.completed ? 'status-completed' : 'status-active'}">
+                            ${survey.completed ? '回答済み' : '回答可能'}
+                        </span>
+                    </div>
+                    <button class="start-btn" ${survey.completed ? 'disabled' : ''}>
+                        ${survey.completed ? '回答済み' : '回答を開始'}
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function selectSurvey(id) {
+            const survey = surveys.find(s => s.id === id);
+            if (survey && !survey.completed) {
+                window.location.href = `survey.html?id=${id}`;
+            }
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        renderSurveys();
+    </script>
+</body>
+</html>

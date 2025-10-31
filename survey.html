@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アンケート回答</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .survey-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .progress-container {
+            margin-top: 15px;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+
+        .question-card {
+            background: white;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .question-number {
+            color: #667eea;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .required {
+            color: #f5576c;
+            margin-left: 5px;
+        }
+
+        .answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option-label:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .option-label input[type="radio"],
+        .option-label input[type="checkbox"] {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .option-label.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .text-input,
+        .textarea-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .text-input:focus,
+        .textarea-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .textarea-input {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .rating-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            padding: 10px 0;
+        }
+
+        .rating-btn {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            font-size: 18px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .rating-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .rating-btn.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .rating-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 15px 35px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-back {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-back:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-next,
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-next:hover,
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .completion-card {
+            background: white;
+            padding: 60px 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .completion-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .completion-title {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .completion-text {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .question-card {
+                padding: 25px 20px;
+            }
+
+            .button-container {
+                flex-direction: column;
+            }
+
+            .rating-container {
+                flex-wrap: wrap;
+            }
+
+            .rating-btn {
+                width: 45px;
+                height: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="survey-title" id="surveyTitle">製品満足度調査</div>
+            <div class="progress-container">
+                <div class="progress-text">
+                    <span id="currentQuestion">1</span> / <span id="totalQuestions">5</span> 問
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="questionContainer"></div>
+
+        <div id="completionContainer" style="display: none;">
+            <div class="completion-card">
+                <div class="completion-icon">✅</div>
+                <div class="completion-title">回答が完了しました</div>
+                <div class="completion-text">
+                    ご協力ありがとうございました。<br>
+                    いただいたご意見は、今後のサービス改善に活用させていただきます。
+                </div>
+                <button class="btn btn-submit" onclick="goToList()">
+                    アンケート一覧に戻る
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const surveyData = {
+            id: 1,
+            title: '製品満足度調査',
+            questions: [
+                {
+                    id: 1,
+                    type: 'radio',
+                    text: '当社製品を使用してどのくらいになりますか？',
+                    required: true,
+                    options: [
+                        '1ヶ月未満',
+                        '1ヶ月〜3ヶ月',
+                        '3ヶ月〜6ヶ月',
+                        '6ヶ月〜1年',
+                        '1年以上'
+                    ]
+                },
+                {
+                    id: 2,
+                    type: 'rating',
+                    text: '製品の全体的な満足度を5段階で評価してください',
+                    required: true,
+                    min: 1,
+                    max: 5,
+                    minLabel: '不満',
+                    maxLabel: '満足'
+                },
+                {
+                    id: 3,
+                    type: 'checkbox',
+                    text: '製品のどの点が気に入っていますか？（複数選択可）',
+                    required: false,
+                    options: [
+                        '使いやすさ',
+                        'デザイン',
+                        '機能の豊富さ',
+                        '価格',
+                        'サポート体制',
+                        'その他'
+                    ]
+                },
+                {
+                    id: 4,
+                    type: 'text',
+                    text: '改善してほしい点があれば教えてください',
+                    required: false,
+                    placeholder: '自由にご記入ください'
+                },
+                {
+                    id: 5,
+                    type: 'textarea',
+                    text: 'その他、ご意見・ご感想がありましたらお聞かせください',
+                    required: false,
+                    placeholder: 'ご自由にお書きください'
+                }
+            ]
+        };
+
+        let currentQuestionIndex = 0;
+        const answers = {};
+
+        function renderQuestion() {
+            const question = surveyData.questions[currentQuestionIndex];
+            const container = document.getElementById('questionContainer');
+            
+            let optionsHTML = '';
+            
+            if (question.type === 'radio') {
+                optionsHTML = `
+                    <div class="answer-options">
+                        ${question.options.map((option, index) => `
+                            <label class="option-label" data-option="${index}">
+                                <input type="radio" name="answer" value="${option}" 
+                                    ${answers[question.id] === option ? 'checked' : ''}>
+                                <span>${option}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (question.type === 'checkbox') {
+                const selectedAnswers = answers[question.id] || [];
+                optionsHTML = `
+                    <div class="answer-options">
+                        ${question.options.map((option, index) => `
+                            <label class="option-label" data-option="${index}">
+                                <input type="checkbox" name="answer" value="${option}"
+                                    ${selectedAnswers.includes(option) ? 'checked' : ''}>
+                                <span>${option}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (question.type === 'rating') {
+                const ratings = [];
+                for (let i = question.min; i <= question.max; i++) {
+                    ratings.push(i);
+                }
+                optionsHTML = `
+                    <div class="rating-container">
+                        ${ratings.map(num => `
+                            <button class="rating-btn ${answers[question.id] === num ? 'selected' : ''}" 
+                                data-rating="${num}">${num}</button>
+                        `).join('')}
+                    </div>
+                    <div class="rating-labels">
+                        <span>${question.minLabel}</span>
+                        <span>${question.maxLabel}</span>
+                    </div>
+                `;
+            } else if (question.type === 'text') {
+                optionsHTML = `
+                    <input type="text" class="text-input" placeholder="${question.placeholder}"
+                        value="${answers[question.id] || ''}" id="textAnswer">
+                `;
+            } else if (question.type === 'textarea') {
+                optionsHTML = `
+                    <textarea class="textarea-input" placeholder="${question.placeholder}"
+                        id="textAnswer">${answers[question.id] || ''}</textarea>
+                `;
+            }
+
+            container.innerHTML = `
+                <div class="question-card">
+                    <div class="question-number">質問 ${currentQuestionIndex + 1}</div>
+                    <div class="question-text">
+                        ${question.text}
+                        ${question.required ? '<span class="required">*</span>' : ''}
+                    </div>
+                    ${optionsHTML}
+                </div>
+                <div class="button-container">
+                    <button class="btn btn-back" onclick="prevQuestion()" 
+                        ${currentQuestionIndex === 0 ? 'style="visibility: hidden;"' : ''}>
+                        ← 前へ
+                    </button>
+                    ${currentQuestionIndex < surveyData.questions.length - 1 
+                        ? '<button class="btn btn-next" onclick="nextQuestion()">次へ →</button>'
+                        : '<button class="btn btn-submit" onclick="submitSurvey()">回答を送信</button>'
+                    }
+                </div>
+            `;
+
+            addEventListeners(question);
+            updateProgress();
+        }
+
+        function addEventListeners(question) {
+            if (question.type === 'radio' || question.type === 'checkbox') {
+                const labels = document.querySelectorAll('.option-label');
+                labels.forEach(label => {
+                    const input = label.querySelector('input');
+                    input.addEventListener('change', () => {
+                        if (question.type === 'radio') {
+                            labels.forEach(l => l.classList.remove('selected'));
+                            label.classList.add('selected');
+                        } else {
+                            label.classList.toggle('selected', input.checked);
+                        }
+                    });
+                    if (input.checked) {
+                        label.classList.add('selected');
+                    }
+                });
+            } else if (question.type === 'rating') {
+                const ratingBtns = document.querySelectorAll('.rating-btn');
+                ratingBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        ratingBtns.forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                    });
+                });
+            }
+        }
+
+        function saveAnswer() {
+            const question = surveyData.questions[currentQuestionIndex];
+            
+            if (question.type === 'radio') {
+                const selected = document.querySelector('input[name="answer"]:checked');
+                if (selected) answers[question.id] = selected.value;
+            } else if (question.type === 'checkbox') {
+                const selected = Array.from(document.querySelectorAll('input[name="answer"]:checked'))
+                    .map(input => input.value);
+                if (selected.length > 0) answers[question.id] = selected;
+            } else if (question.type === 'rating') {
+                const selected = document.querySelector('.rating-btn.selected');
+                if (selected) answers[question.id] = parseInt(selected.dataset.rating);
+            } else if (question.type === 'text' || question.type === 'textarea') {
+                const value = document.getElementById('textAnswer').value.trim();
+                if (value) answers[question.id] = value;
+            }
+        }
+
+        function validateAnswer() {
+            const question = surveyData.questions[currentQuestionIndex];
+            if (!question.required) return true;
+            return answers[question.id] !== undefined && answers[question.id] !== '';
+        }
+
+        function nextQuestion() {
+            saveAnswer();
+            if (currentQuestionIndex < surveyData.questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            saveAnswer();
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+
+        function submitSurvey() {
+            saveAnswer();
+            
+            const unansweredRequired = surveyData.questions.filter(q => 
+                q.required && (answers[q.id] === undefined || answers[q.id] === '')
+            );
+            
+            if (unansweredRequired.length > 0) {
+                alert('必須項目に未回答の質問があります。');
+                return;
+            }
+
+            console.log('回答データ:', answers);
+            
+            document.getElementById('questionContainer').style.display = 'none';
+            document.querySelector('.header').style.display = 'none';
+            document.getElementById('completionContainer').style.display = 'block';
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestionIndex + 1) / surveyData.questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('totalQuestions').textContent = surveyData.questions.length;
+        }
+
+        function goToList() {
+            window.location.href = 'user.html';
+        }
+
+        document.getElementById('surveyTitle').textContent = surveyData.title;
+        renderQuestion();
+    </script>
+</body>
+</html>

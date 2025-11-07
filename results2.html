@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回答結果 - にげまっし</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .survey-title {
+            font-size: 24px;
+            color: #333;
+            font-weight: 800;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 700;
+        }
+
+        .filter-select {
+            padding: 10px 18px;
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #FF6B6B;
+        }
+
+        .export-btn {
+            margin-left: auto;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+
+        .export-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .results-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-bottom: 25px;
+        }
+
+        .question-section {
+            margin-bottom: 40px;
+        }
+
+        .question-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #f0f0f0;
+        }
+
+        .question-title {
+            font-size: 18px;
+            color: #333;
+            font-weight: 700;
+            flex: 1;
+        }
+
+        .question-type {
+            background: #FFF9E6;
+            color: #FF6B6B;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .chart-container {
+            margin: 20px 0;
+        }
+
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .bar-label {
+            min-width: 180px;
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .bar-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bar {
+            height: 35px;
+            background: linear-gradient(90deg, #FF6B6B, #FFB347);
+            border-radius: 8px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .bar:hover {
+            opacity: 0.8;
+            transform: scaleX(1.02);
+        }
+
+        .bar-count {
+            font-size: 14px;
+            font-weight: 700;
+            color: #333;
+            min-width: 80px;
+        }
+
+        .text-responses {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .response-item {
+            background: #f8f9fa;
+            padding: 18px;
+            border-radius: 12px;
+            border-left: 4px solid #FF6B6B;
+            transition: all 0.3s;
+        }
+
+        .response-item:hover {
+            background: #FFF9F0;
+            transform: translateX(5px);
+        }
+
+        .response-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: #999;
+            font-weight: 600;
+        }
+
+        .response-text {
+            color: #333;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .rating-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            padding: 30px;
+        }
+
+        .rating-summary {
+            text-align: center;
+        }
+
+        .rating-average {
+            font-size: 52px;
+            font-weight: 800;
+            color: #FF6B6B;
+            margin-bottom: 10px;
+        }
+
+        .rating-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .rating-bars {
+            flex: 1;
+            max-width: 450px;
+        }
+
+        .rating-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .rating-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: #666;
+            width: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .export-btn {
+                margin-left: 0;
+            }
+
+            .bar-label {
+                min-width: 120px;
+                font-size: 13px;
+            }
+
+            .rating-display {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div class="survey-title" id="surveyTitle">にげまっし アプリ改善アンケート</div>
+                <button class="back-btn" onclick="goBack()">← 戻る</button>
+            </div>
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalResponses">124</div>
+                    <div class="stat-label">総回答数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completionRate">92%</div>
+                    <div class="stat-label">完了率</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avgTime">4.8分</div>
+                    <div class="stat-label">平均回答時間</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <span class="filter-label">期間:</span>
+            <select class="filter-select" id="periodFilter">
+                <option value="all">全期間</option>
+                <option value="today">今日</option>
+                <option value="week">過去7日間</option>
+                <option value="month">過去30日間</option>
+            </select>
+
+            <span class="filter-label">並び順:</span>
+            <select class="filter-select" id="sortFilter">
+                <option value="newest">新しい順</option>
+                <option value="oldest">古い順</option>
+            </select>
+
+            <button class="export-btn" onclick="exportData()">📊 CSVエクスポート</button>
+        </div>
+
+        <div class="results-card" id="resultsContainer"></div>
+    </div>
+
+    <script>
+        const surveyResults = {
+            title: 'にげまっし アプリ改善アンケート',
+            totalResponses: 124,
+            completionRate: 92,
+            avgTime: 4.8,
+            questions: [
+                {
+                    id: 1,
+                    type: 'radio',
+                    text: 'にげまっしを使い始めてどのくらいになりますか?',
+                    responses: [
+                        { option: '今日初めて使った', count: 12 },
+                        { option: '1週間未満', count: 18 },
+                        { option: '1週間〜1ヶ月', count: 28 },
+                        { option: '1ヶ月〜3ヶ月', count: 32 },
+                        { option: '3ヶ月〜半年', count: 21 },
+                        { option: '半年以上', count: 13 }
+                    ]
+                },
+                {
+                    id: 2,
+                    type: 'rating',
+                    text: 'アプリの総合的な満足度を教えてください',
+                    average: 4.3,
+                    distribution: [
+                        { rating: 5, count: 56 },
+                        { rating: 4, count: 42 },
+                        { rating: 3, count: 18 },
+                        { rating: 2, count: 6 },
+                        { rating: 1, count: 2 }
+                    ]
+                },
+                {
+                    id: 3,
+                    type: 'checkbox',
+                    text: 'よく使う機能を教えてください(複数選択可)',
+                    responses: [
+                        { option: '避難場所の検索・確認', count: 89 },
+                        { option: 'ハザードマップの閲覧', count: 76 },
+                        { option: '災害情報の通知', count: 92 },
+                        { option: '安否確認機能', count: 54 },
+                        { option: '防災グッズチェックリスト', count: 47 },
+                        { option: '避難ルートのナビゲーション', count: 38 },
+                        { option: '緊急連絡先の登録', count: 61 },
+                        { option: '防災知識・啓発コンテンツ', count: 43 }
+                    ]
+                },
+                {
+                    id: 4,
+                    type: 'textarea',
+                    text: '改善してほしい点や不具合があれば教えてください',
+                    responses: [
+                        { text: '地図の読み込みが遅い時がある', date: '2024-11-10 15:30' },
+                        { text: '避難場所の情報をもっと詳しくしてほしい', date: '2024-11-10 14:20' },
+                        { text: 'オフラインでも使える機能を増やしてほしい', date: '2024-11-10 12:45' },
+                        { text: 'バッテリー消費が気になる', date: '2024-11-09 18:15' },
+                        { text: '通知音をカスタマイズできるようにしてほしい', date: '2024-11-09 16:30' }
+                    ]
+                }
+            ]
+        };
+
+        function renderResults() {
+            const container = document.getElementById('resultsContainer');
+            
+            container.innerHTML = surveyResults.questions.map(question => {
+                let contentHTML = '';
+
+                if (question.type === 'radio' || question.type === 'checkbox') {
+                    const total = question.responses.reduce((sum, r) => sum + r.count, 0);
+                    const maxCount = Math.max(...question.responses.map(r => r.count));
+                    
+                    contentHTML = `
+                        <div class="chart-container">
+                            <div class="bar-chart">
+                                ${question.responses.map(response => {
+                                    const percentage = total > 0 ? (response.count / total * 100).toFixed(1) : 0;
+                                    const width = maxCount > 0 ? (response.count / maxCount * 100) : 0;
+                                    return `
+                                        <div class="bar-item">
+                                            <div class="bar-label">${response.option}</div>
+                                            <div class="bar-wrapper">
+                                                <div class="bar" style="width: ${width}%"></div>
+                                                <div class="bar-count">${response.count}件 (${percentage}%)</div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else if (question.type === 'rating') {
+                    const total = question.distribution.reduce((sum, d) => sum + d.count, 0);
+                    const maxCount = Math.max(...question.distribution.map(d => d.count));
+                    
+                    contentHTML = `
+                        <div class="rating-display">
+                            <div class="rating-summary">
+                                <div class="rating-average">${question.average.toFixed(1)}</div>
+                                <div class="rating-label">平均評価</div>
+                                <div class="rating-label" style="margin-top: 5px;">${total}件の回答</div>
+                            </div>
+                            <div class="rating-bars">
+                                ${question.distribution.sort((a, b) => b.rating - a.rating).map(item => {
+                                    const percentage = total > 0 ? (item.count / total * 100).toFixed(1) : 0;
+                                    const width = maxCount > 0 ? (item.count / maxCount * 100) : 0;
+                                    return `
+                                        <div class="rating-bar-item">
+                                            <div class="rating-number">⭐${item.rating}</div>
+                                            <div class="bar-wrapper">
+                                                <div class="bar" style="width: ${width}%"></div>
+                                                <div class="bar-count">${item.count}件 (${percentage}%)</div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else if (question.type === 'text' || question.type === 'textarea') {
+                    contentHTML = `
+                        <div class="text-responses">
+                            ${question.responses.map(response => `
+                                <div class="response-item">
+                                    <div class="response-meta">
+                                        <span>回答日時: ${response.date}</span>
+                                    </div>
+                                    <div class="response-text">${response.text}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="question-section">
+                        <div class="question-header">
+                            <div class="question-title">Q${question.id}. ${question.text}</div>
+                            <div class="question-type">${getTypeLabel(question.type)}</div>
+                        </div>
+                        ${contentHTML}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTypeLabel(type) {
+            const labels = {
+                'radio': '単一選択',
+                'checkbox': '複数選択',
+                'rating': '評価',
+                'text': 'テキスト',
+                'textarea': '長文テキスト'
+            };
+            return labels[type] || type;
+        }
+
+        function exportData() {
+            alert('CSVファイルとしてエクスポートします。\n(実装例: 回答データをCSV形式に変換してダウンロード)');
+        }
+
+        function goBack() {
+            window.location.href = 'admin.html';
+        }
+
+        document.getElementById('surveyTitle').textContent = surveyResults.title;
+        document.getElementById('totalResponses').textContent = surveyResults.totalResponses;
+        document.getElementById('completionRate').textContent = surveyResults.completionRate + '%';
+        document.getElementById('avgTime').textContent = surveyResults.avgTime + '分';
+        renderResults();
+    </script>
+</body>
+</html>

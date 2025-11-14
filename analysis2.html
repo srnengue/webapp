@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>回答分析 - にげまっし</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -264,6 +265,13 @@
             margin-left: 5px;
         }
 
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 18px;
+        }
+
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -279,55 +287,54 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
+        <div class="loading" id="loadingMessage">📊 データを読み込んでいます...</div>
+
+        <div class="header" style="display: none;" id="mainContent">
             <div class="header-title">📈 回答データ分析</div>
             <button class="back-btn" onclick="goBack()">← 戻る</button>
         </div>
 
-        <div class="insights-grid">
+        <div class="insights-grid" style="display: none;" id="insightsGrid">
             <div class="insight-card">
                 <div class="insight-icon">⭐</div>
                 <div class="insight-title">総合満足度</div>
-                <div class="insight-value">4.3<span style="font-size: 20px; color: #999;">/5.0</span></div>
-                <div class="insight-description">前回調査(4.1)より0.2ポイント向上</div>
+                <div class="insight-value" id="avgSatisfaction">-<span style="font-size: 20px; color: #999;">/5.0</span></div>
+                <div class="insight-description" id="satisfactionDesc">データを集計中...</div>
             </div>
 
             <div class="insight-card">
                 <div class="insight-icon">📊</div>
                 <div class="insight-title">回答完了率</div>
-                <div class="insight-value">92<span style="font-size: 20px; color: #999;">%</span></div>
+                <div class="insight-value" id="completionRate">-<span style="font-size: 20px; color: #999;">%</span></div>
                 <div class="insight-description">高い回答完了率を維持</div>
             </div>
 
             <div class="insight-card">
                 <div class="insight-icon">🎯</div>
                 <div class="insight-title">最重要課題</div>
-                <div class="insight-value" style="font-size: 18px;">オフライン機能</div>
-                <div class="insight-description">38%のユーザーが改善要望</div>
+                <div class="insight-value" style="font-size: 18px;" id="topIssue">-</div>
+                <div class="insight-description" id="topIssueDesc">-</div>
             </div>
 
             <div class="insight-card">
                 <div class="insight-icon">✨</div>
                 <div class="insight-title">人気機能</div>
-                <div class="insight-value" style="font-size: 18px;">災害情報通知</div>
-                <div class="insight-description">92件の利用(74%)</div>
+                <div class="insight-value" style="font-size: 18px;" id="topFeature">-</div>
+                <div class="insight-description" id="topFeatureDesc">-</div>
             </div>
         </div>
 
-        <div class="analysis-section">
+        <div class="analysis-section" style="display: none;" id="trendSection">
             <div class="section-title">
                 <span>📈</span>
                 <span>回答トレンド</span>
             </div>
             <div class="trend-chart">
-                <div class="chart-placeholder">
-                    📊 時系列グラフ表示エリア<br>
-                    (実装時: Chart.js等でグラフを表示)
-                </div>
+                <canvas id="trendCanvas"></canvas>
             </div>
         </div>
 
-        <div class="analysis-section">
+        <div class="analysis-section" style="display: none;" id="sentimentSection">
             <div class="section-title">
                 <span>😊</span>
                 <span>感情分析</span>
@@ -336,118 +343,359 @@
                 <div class="sentiment-item">
                     <div class="sentiment-emoji">😊</div>
                     <div class="sentiment-label">ポジティブ</div>
-                    <div class="sentiment-percentage">68%</div>
+                    <div class="sentiment-percentage" id="positivePercent">-</div>
                 </div>
                 <div class="sentiment-item">
                     <div class="sentiment-emoji">😐</div>
                     <div class="sentiment-label">中立</div>
-                    <div class="sentiment-percentage">24%</div>
+                    <div class="sentiment-percentage" id="neutralPercent">-</div>
                 </div>
                 <div class="sentiment-item">
                     <div class="sentiment-emoji">😔</div>
-                    <div class="sentiment-label">ネガティブ</div>
-                    <div class="sentiment-percentage">8%</div>
+                    <div class="sentiment-label">だめだめ</div>
+                    <div class="sentiment-percentage" id="negativePercent">-</div>
                 </div>
             </div>
         </div>
 
-        <div class="analysis-section">
+        <div class="analysis-section" style="display: none;" id="keywordsSection">
             <div class="section-title">
                 <span>🏷️</span>
                 <span>頻出キーワード</span>
             </div>
-            <div class="keywords-cloud">
-                <div class="keyword-tag">地図 <span class="keyword-count">(45)</span></div>
-                <div class="keyword-tag">通知 <span class="keyword-count">(38)</span></div>
-                <div class="keyword-tag">避難場所 <span class="keyword-count">(36)</span></div>
-                <div class="keyword-tag">オフライン <span class="keyword-count">(32)</span></div>
-                <div class="keyword-tag">バッテリー <span class="keyword-count">(28)</span></div>
-                <div class="keyword-tag">使いやすい <span class="keyword-count">(24)</span></div>
-                <div class="keyword-tag">情報 <span class="keyword-count">(22)</span></div>
-                <div class="keyword-tag">安心 <span class="keyword-count">(20)</span></div>
-                <div class="keyword-tag">改善 <span class="keyword-count">(18)</span></div>
-                <div class="keyword-tag">機能 <span class="keyword-count">(16)</span></div>
+            <div class="keywords-cloud" id="keywordsCloud">
+                <!-- キーワードタグが動的に追加されます -->
             </div>
         </div>
 
-        <div class="analysis-section">
+        <div class="analysis-section" style="display: none;" id="recommendationsSection">
             <div class="section-title">
                 <span>💡</span>
                 <span>改善提案</span>
             </div>
-            <div class="recommendation-list">
-                <div class="recommendation-item">
-                    <div class="recommendation-icon">🚀</div>
-                    <div class="recommendation-content">
-                        <div class="recommendation-title">
-                            オフライン機能の拡充
-                            <span class="priority-badge priority-high">高優先度</span>
-                        </div>
-                        <div class="recommendation-text">
-                            38%のユーザーがオフラインでの利用を要望。災害時の通信障害を想定し、ハザードマップや避難場所情報のオフライン対応を検討すべき。
-                        </div>
-                    </div>
-                </div>
-
-                <div class="recommendation-item">
-                    <div class="recommendation-icon">🔋</div>
-                    <div class="recommendation-content">
-                        <div class="recommendation-title">
-                            バッテリー消費の最適化
-                            <span class="priority-badge priority-high">高優先度</span>
-                        </div>
-                        <div class="recommendation-text">
-                            28件のフィードバックでバッテリー消費が指摘されている。位置情報取得の頻度見直しや、省電力モードの実装を推奨。
-                        </div>
-                    </div>
-                </div>
-
-                <div class="recommendation-item">
-                    <div class="recommendation-icon">🗺️</div>
-                    <div class="recommendation-content">
-                        <div class="recommendation-title">
-                            地図の読み込み速度改善
-                            <span class="priority-badge priority-medium">中優先度</span>
-                        </div>
-                        <div class="recommendation-text">
-                            地図表示の遅延に関するフィードバックが複数件。キャッシュ機能の実装やデータ圧縮により、表示速度を向上させる。
-                        </div>
-                    </div>
-                </div>
-
-                <div class="recommendation-item">
-                    <div class="recommendation-icon">📱</div>
-                    <div class="recommendation-content">
-                        <div class="recommendation-title">
-                            多言語対応の検討
-                            <span class="priority-badge priority-medium">中優先度</span>
-                        </div>
-                        <div class="recommendation-text">
-                            外国人観光客や在住者向けに、英語・中国語などの多言語対応を検討。防災情報のアクセシビリティ向上に貢献。
-                        </div>
-                    </div>
-                </div>
-
-                <div class="recommendation-item">
-                    <div class="recommendation-icon">🎨</div>
-                    <div class="recommendation-content">
-                        <div class="recommendation-title">
-                            UIの更なる改善
-                            <span class="priority-badge priority-low">低優先度</span>
-                        </div>
-                        <div class="recommendation-text">
-                            満足度は高いが、一部ユーザーからUIの改善要望あり。ユーザビリティテストを実施し、細かな使い勝手を向上させる。
-                        </div>
-                    </div>
-                </div>
+            <div class="recommendation-list" id="recommendationsList">
+                <!-- 改善提案が動的に追加されます -->
             </div>
         </div>
     </div>
 
     <script>
+        // 【重要】ここにデプロイしたGoogle Apps Script WebアプリのURLを設定してください
+        const GAS_ENDPOINT_GET = 'https://script.google.com/macros/s/AKfycbzYwB9v0Hun9I2x5hz2-cfEEXH0pRphy4T2N61S_J0MGIPTFHXitCybI9cSVsd6C-jf/exec';
+        
+        let currentSurveyId = 1;
+        let chartInstance = null;
+
+        // 質問定義（survey4.htmlと同じ）
+        const surveyQuestions = [
+            { id: 1, type: 'radio', text: 'にげまっしを使い始めてどのくらいになりますか?' },
+            { id: 2, type: 'rating', text: 'アプリの総合的な満足度を教えてください' },
+            { id: 3, type: 'checkbox', text: 'よく使う機能を教えてください' },
+            { id: 4, type: 'radio', text: '通知機能の頻度について、どう感じていますか?' },
+            { id: 5, type: 'rating', text: 'アプリの使いやすさ(操作性・デザイン)を評価してください' },
+            { id: 6, type: 'checkbox', text: '追加してほしい機能があれば教えてください' },
+            { id: 7, type: 'textarea', text: '改善してほしい点や不具合があれば教えてください' },
+            { id: 8, type: 'textarea', text: 'その他、ご意見・ご要望があればお聞かせください' }
+        ];
+
+        async function loadAnalysisData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentSurveyId = Number(urlParams.get('id')) || 1;
+
+            try {
+                const response = await fetch(GAS_ENDPOINT_GET);
+                const data = await response.json();
+                
+                if (data.result === "success") {
+                    const surveyResponses = data.data.filter(res => Number(res.surveyId) === currentSurveyId);
+                    
+                    if (surveyResponses.length === 0) {
+                        showNoDataMessage();
+                        return;
+                    }
+
+                    const analysis = analyzeData(surveyResponses);
+                    renderAnalysis(analysis);
+                    showContent();
+                    
+                } else {
+                    console.error('GASからのデータ取得エラー:', data.message);
+                    showError();
+                }
+            } catch (error) {
+                console.error('データの取得に失敗しました:', error);
+                showError();
+            }
+        }
+
+        function analyzeData(responses) {
+            const analysis = {
+                totalResponses: responses.length,
+                completionRate: 100, // 簡易計算
+                avgSatisfaction: calculateAvgRating(responses, 2),
+                avgUsability: calculateAvgRating(responses, 5),
+                topFeatures: analyzeCheckboxQuestion(responses, 3),
+                topIssues: analyzeCheckboxQuestion(responses, 6),
+                sentiment: analyzeSentiment(responses),
+                keywords: extractKeywords(responses),
+                trend: calculateTrend(responses)
+            };
+            
+            return analysis;
+        }
+
+        function calculateAvgRating(responses, questionId) {
+            const ratings = responses
+                .map(r => Number(r[String(questionId)]))
+                .filter(r => !isNaN(r) && r >= 1 && r <= 5);
+            
+            if (ratings.length === 0) return 0;
+            const sum = ratings.reduce((a, b) => a + b, 0);
+            return (sum / ratings.length).toFixed(1);
+        }
+
+        function analyzeCheckboxQuestion(responses, questionId) {
+            const counts = {};
+            
+            responses.forEach(res => {
+                const answer = res[String(questionId)];
+                if (answer && String(answer).trim() !== '') {
+                    const options = String(answer).split(' | ').map(s => s.trim()).filter(s => s !== '');
+                    options.forEach(option => {
+                        counts[option] = (counts[option] || 0) + 1;
+                    });
+                }
+            });
+
+            return Object.entries(counts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+        }
+
+        function analyzeSentiment(responses) {
+            // 満足度(Q2)とユーザビリティ(Q5)から簡易的に感情分析
+            let positive = 0, neutral = 0, negative = 0;
+
+            responses.forEach(res => {
+                const satisfaction = Number(res['2']);
+                const usability = Number(res['5']);
+                const avg = (satisfaction + usability) / 2;
+
+                if (avg >= 4) positive++;
+                else if (avg >= 3) neutral++;
+                else negative++;
+            });
+
+            const total = responses.length;
+            return {
+                positive: Math.round((positive / total) * 100),
+                neutral: Math.round((neutral / total) * 100),
+                negative: Math.round((negative / total) * 100)
+            };
+        }
+
+        function extractKeywords(responses) {
+            const keywords = {};
+            const targetQuestions = [7, 8]; // テキスト回答の質問
+
+            targetQuestions.forEach(qId => {
+                responses.forEach(res => {
+                    const text = res[String(qId)];
+                    if (text && String(text).trim() !== '') {
+                        // 簡易的なキーワード抽出（スペース区切り）
+                        const words = String(text).split(/[\s、。,.\n]+/)
+                            .filter(w => w.length > 1);
+                        
+                        words.forEach(word => {
+                            keywords[word] = (keywords[word] || 0) + 1;
+                        });
+                    }
+                });
+            });
+
+            return Object.entries(keywords)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+        }
+
+        function calculateTrend(responses) {
+            // 日付ごとの平均満足度を計算
+            const dateGroups = {};
+
+            responses.forEach(res => {
+                const date = new Date(res.timestamp).toISOString().split('T')[0];
+                if (!dateGroups[date]) {
+                    dateGroups[date] = [];
+                }
+                const rating = Number(res['2']);
+                if (!isNaN(rating)) {
+                    dateGroups[date].push(rating);
+                }
+            });
+
+            return Object.entries(dateGroups)
+                .map(([date, ratings]) => ({
+                    date: date,
+                    avg: (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+                }))
+                .sort((a, b) => a.date.localeCompare(b.date));
+        }
+
+        function renderAnalysis(analysis) {
+            // 統計情報の更新
+            document.getElementById('avgSatisfaction').innerHTML = 
+                `${analysis.avgSatisfaction}<span style="font-size: 20px; color: #999;">/5.0</span>`;
+            
+            document.getElementById('satisfactionDesc').textContent = 
+                `平均ユーザビリティ: ${analysis.avgUsability}/5.0`;
+
+            document.getElementById('completionRate').innerHTML = 
+                `${analysis.completionRate}<span style="font-size: 20px; color: #999;">%</span>`;
+
+            // 人気機能
+            if (analysis.topFeatures.length > 0) {
+                const [topFeature, count] = analysis.topFeatures[0];
+                document.getElementById('topFeature').textContent = topFeature;
+                document.getElementById('topFeatureDesc').textContent = 
+                    `${count}件の利用 (${Math.round((count / analysis.totalResponses) * 100)}%)`;
+            }
+
+            // 最重要課題
+            if (analysis.topIssues.length > 0) {
+                const [topIssue, count] = analysis.topIssues[0];
+                document.getElementById('topIssue').textContent = topIssue;
+                document.getElementById('topIssueDesc').textContent = 
+                    `${Math.round((count / analysis.totalResponses) * 100)}%のユーザーが要望`;
+            }
+
+            // 感情分析
+            document.getElementById('positivePercent').textContent = analysis.sentiment.positive + '%';
+            document.getElementById('neutralPercent').textContent = analysis.sentiment.neutral + '%';
+            document.getElementById('negativePercent').textContent = analysis.sentiment.negative + '%';
+
+            // キーワードクラウド
+            const keywordsCloud = document.getElementById('keywordsCloud');
+            keywordsCloud.innerHTML = analysis.keywords.map(([keyword, count]) => 
+                `<div class="keyword-tag">${keyword} <span class="keyword-count">(${count})</span></div>`
+            ).join('');
+
+            // トレンドグラフ
+            drawTrendChart(analysis.trend);
+
+            // 改善提案
+            renderRecommendations(analysis);
+        }
+
+        function drawTrendChart(trend) {
+            const ctx = document.getElementById('trendCanvas');
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trend.map(t => t.date),
+                    datasets: [{
+                        label: '平均満足度',
+                        data: trend.map(t => t.avg),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderRecommendations(analysis) {
+            const recommendations = [
+                {
+                    icon: '🚀',
+                    title: '機能拡充の検討',
+                    priority: 'high',
+                    text: `「${analysis.topIssues[0]?.[0] || '新機能'}」への要望が高まっています。ユーザーニーズに応える機能追加を検討しましょう。`
+                },
+                {
+                    icon: '⭐',
+                    title: '満足度の維持・向上',
+                    priority: analysis.avgSatisfaction >= 4 ? 'medium' : 'high',
+                    text: `現在の満足度は${analysis.avgSatisfaction}/5.0です。${analysis.avgSatisfaction >= 4 ? '高い水準を維持' : '改善の余地があります'}。`
+                },
+                {
+                    icon: '📱',
+                    title: 'ユーザビリティの改善',
+                    priority: analysis.avgUsability >= 4 ? 'low' : 'medium',
+                    text: `操作性の評価は${analysis.avgUsability}/5.0です。UI/UXの継続的な改善を推奨します。`
+                }
+            ];
+
+            const list = document.getElementById('recommendationsList');
+            list.innerHTML = recommendations.map(rec => `
+                <div class="recommendation-item">
+                    <div class="recommendation-icon">${rec.icon}</div>
+                    <div class="recommendation-content">
+                        <div class="recommendation-title">
+                            ${rec.title}
+                            <span class="priority-badge priority-${rec.priority}">
+                                ${rec.priority === 'high' ? '高優先度' : rec.priority === 'medium' ? '中優先度' : '低優先度'}
+                            </span>
+                        </div>
+                        <div class="recommendation-text">${rec.text}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showContent() {
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'flex';
+            document.getElementById('insightsGrid').style.display = 'grid';
+            document.getElementById('trendSection').style.display = 'block';
+            document.getElementById('sentimentSection').style.display = 'block';
+            document.getElementById('keywordsSection').style.display = 'block';
+            document.getElementById('recommendationsSection').style.display = 'block';
+        }
+
+        function showNoDataMessage() {
+            document.getElementById('loadingMessage').innerHTML = 
+                '📭 このアンケートにはまだ回答がありません。<br><br><button class="back-btn" onclick="goBack()">← 戻る</button>';
+        }
+
+        function showError() {
+            document.getElementById('loadingMessage').innerHTML = 
+                '❌ データの読み込みに失敗しました。<br><br><button class="back-btn" onclick="goBack()">← 戻る</button>';
+        }
+
         function goBack() {
             window.location.href = 'admin.html';
         }
+
+        // ページ読み込み時に実行
+        window.addEventListener('load', loadAnalysisData);
     </script>
 </body>
 </html>

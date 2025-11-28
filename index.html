@@ -96,6 +96,16 @@
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
 
+        .btn-safety {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+            color: white;
+        }
+
+        .btn-safety:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+        }
+
         .btn-admin {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
@@ -137,6 +147,10 @@
                 <span><span class="icon">📝</span>アンケートに回答する</span>
             </button>
             
+            <button class="btn btn-safety" onclick="goToSafety()">
+                <span><span class="icon">🆘</span>安否確認</span>
+            </button>
+            
             <button class="btn btn-admin" onclick="goToAdmin()">
                 <span><span class="icon">⚙️</span>管理者ページ</span>
             </button>
@@ -146,6 +160,10 @@
     <script>
         function goToUser() {
             window.location.href = 'user.html';
+        }
+
+        function goToSafety() {
+            window.location.href = 'safety-check.html';
         }
 
         function goToAdmin() {

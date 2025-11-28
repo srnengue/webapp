@@ -1,0 +1,19 @@
+<button class="btn btn-quiz" onclick="goToQuiz()">
+    <span class="icon">💡</span> 防災クイズ
+</button>
+
+function goToQuiz() {
+    window.location.href = 'quiz.html';
+}
+
+.btn-quiz {
+    /* 既存のユーザー/管理者ボタンの中間色として設定 */
+    background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%); 
+    color: white;
+    margin-bottom: 20px; /* 他のボタンとの間隔を空ける */
+}
+
+.btn-quiz:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(76, 175, 80, 0.4);
+}

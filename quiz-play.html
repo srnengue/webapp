@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>クイズプレイ - にげまっし</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .progress-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .progress-percentage {
+            font-size: 18px;
+            color: #FF6B6B;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF6B6B, #FFB347);
+            transition: width 0.4s ease;
+            border-radius: 10px;
+        }
+
+        .quiz-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-bottom: 20px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #f0f0f0;
+        }
+
+        .question-category {
+            color: #FF6B6B;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .question-number {
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .question-text {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            font-weight: 700;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .option-btn {
+            width: 100%;
+            padding: 20px 25px;
+            text-align: left;
+            border: 3px solid #f0f0f0;
+            border-radius: 15px;
+            background: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #333;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: #FFB347;
+            background: #FFF9F0;
+            transform: translateX(5px);
+        }
+
+        .option-btn.correct {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+        }
+
+        .option-btn.incorrect {
+            border-color: #dc3545;
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .explanation-box {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-left: 5px solid #2196F3;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .explanation-box.show {
+            display: block;
+        }
+
+        .explanation-title {
+            font-weight: 700;
+            color: #1976D2;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .explanation-text {
+            color: #0D47A1;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quit-btn {
+            color: #666;
+            background: none;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quit-btn:hover {
+            color: #333;
+            text-decoration: underline;
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: none;
+        }
+
+        .next-btn.show {
+            display: block;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .score-display {
+            color: #FF6B6B;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .result-card {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            display: none;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .result-card.show {
+            display: block;
+        }
+
+        .result-icon {
+            font-size: 100px;
+            margin-bottom: 25px;
+            animation: bounce 1s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .result-title {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .result-score {
+            font-size: 56px;
+            font-weight: 800;
+            color: #FF6B6B;
+            margin-bottom: 10px;
+        }
+
+        .result-percentage {
+            font-size: 24px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .result-message {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 35px;
+            line-height: 1.8;
+        }
+
+        .result-details {
+            text-align: left;
+            margin: 30px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-details-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 12px;
+            align-items: start;
+        }
+
+        .result-item-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .result-item-content {
+            flex: 1;
+        }
+
+        .result-item-question {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .result-item-answer {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .result-btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .retry-btn {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+            color: white;
+        }
+
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .menu-btn {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .menu-btn:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .quiz-card {
+                padding: 25px 20px;
+            }
+
+            .question-text {
+                font-size: 20px;
+            }
+
+            .result-card {
+                padding: 40px 25px;
+            }
+
+            .result-score {
+                font-size: 48px;
+            }
+
+            .result-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-info">
+                <div class="progress-text">
+                    問 <span id="currentQuestion">1</span> / <span id="totalQuestions">3</span>
+                </div>
+                <div class="progress-percentage" id="progressPercentage">33%</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="quiz-card" id="quizCard">
+            <div class="question-header">
+                <div class="question-category" id="questionCategory"></div>
+                <div class="question-number">問<span id="questionNumber">1</span></div>
+            </div>
+
+            <div class="question-text" id="questionText"></div>
+
+            <div class="options-container" id="optionsContainer"></div>
+
+            <div class="explanation-box" id="explanationBox">
+                <div class="explanation-title">💡 解説</div>
+                <div class="explanation-text" id="explanationText"></div>
+            </div>
+
+            <div class="button-container">
+                <button class="quit-btn" onclick="quitQuiz()">やめる</button>
+                <button class="next-btn" id="nextBtn" onclick="nextQuestion()"></button>
+                <div class="score-display">スコア: <span id="scoreDisplay">0</span></div>
+            </div>
+        </div>
+
+        <div class="result-card" id="resultCard">
+            <div class="result-icon" id="resultIcon">🎉</div>
+            <div class="result-title">クイズ完了！</div>
+            <div class="result-score"><span id="finalScore">0</span> / <span id="finalTotal">3</span></div>
+            <div class="result-percentage">正解率: <span id="finalPercentage">0</span>%</div>
+            <div class="result-message" id="resultMessage"></div>
+
+            <div class="result-details">
+                <div class="result-details-title">結果の詳細</div>
+                <div id="resultDetailsList"></div>
+            </div>
+
+            <div class="result-actions">
+                <button class="result-btn retry-btn" onclick="retryQuiz()">
+                    🔄 もう一度挑戦
+                </button>
+                <button class="result-btn menu-btn" onclick="backToMenu()">
+                    ← メニューに戻る
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizDatabase = {
+            1: {
+                category: "防災基礎知識",
+                questions: [
+                    {
+                        question: "地震が発生した時、最初にすべき行動は？",
+                        options: ["すぐに外に逃げる", "机の下に隠れる", "エレベーターで避難する", "窓を開ける"],
+                        correct: 1,
+                        explanation: "地震時はまず身の安全を確保することが最優先です。机の下に隠れて頭を守りましょう。揺れが収まってから避難を開始します。"
+                    },
+                    {
+                        question: "避難所に持っていくべき最も重要なものは？",
+                        options: ["ゲーム機", "飲料水と食料", "テレビ", "パソコン"],
+                        correct: 1,
+                        explanation: "生命維持に必要な水と食料が最優先です。1人あたり3日分の備蓄が推奨されています。その他、医薬品や貴重品も重要です。"
+                    },
+                    {
+                        question: "津波警報が出た時の行動は？",
+                        options: ["海の様子を見に行く", "すぐに高台へ避難する", "家で待機する", "川沿いに避難する"],
+                        correct: 1,
+                        explanation: "津波警報が出たら、すぐに高い場所や指定避難所へ避難してください。海や川には絶対に近づかず、津波は繰り返し来るので注意が必要です。"
+                    }
+                ]
+            },
+            2: {
+                category: "避難所知識",
+                questions: [
+                    {
+                        question: "避難所での生活で大切なことは？",
+                        options: ["自分のことだけ考える", "みんなで協力する", "大声で話す", "好きな場所を占領する"],
+                        correct: 1,
+                        explanation: "避難所では多くの人が共同生活をするため、お互いに協力し合い、譲り合いの精神が大切です。ルールを守って快適な環境を作りましょう。"
+                    },
+                    {
+                        question: "避難所に行く前に確認すべきことは？",
+                        options: ["天気予報", "指定避難所の場所", "SNSの更新", "テレビ番組"],
+                        correct: 1,
+                        explanation: "事前に自分の住む地域の指定避難所がどこにあるか確認しておきましょう。避難経路も複数確認しておくと安心です。"
+                    },
+                    {
+                        question: "ペットと避難する場合の注意点は？",
+                        options: ["ペット同伴可能な避難所を確認する", "ペットを置いていく", "避難所でペットを自由に歩かせる", "特に準備は不要"],
+                        correct: 0,
+                        explanation: "ペット同伴の避難には事前の準備が必要です。ペット同伴可能な避難所を確認し、キャリーケージやペットフード、予防接種証明書などを用意しましょう。"
+                    }
+                ]
+            },
+            3: {
+                category: "災害情報",
+                questions: [
+                    {
+                        question: "災害時の正確な情報源は？",
+                        options: ["SNSの噂", "公式の防災アプリや自治体情報", "友人からの伝聞", "テレビのバラエティ番組"],
+                        correct: 1,
+                        explanation: "災害時は、自治体の公式情報や気象庁、防災アプリなどから正確な情報を得ることが重要です。デマに惑わされないよう注意しましょう。"
+                    },
+                    {
+                        question: "緊急速報メールが届いた時は？",
+                        options: ["無視する", "すぐに内容を確認して行動する", "後で見る", "友達に転送する"],
+                        correct: 1,
+                        explanation: "緊急速報メールは命に関わる重要な情報です。すぐに確認して適切な行動をとりましょう。地震速報、津波警報、気象警報などが配信されます。"
+                    },
+                    {
+                        question: "ハザードマップの役割は？",
+                        options: ["観光地を示す", "災害リスクのある地域を示す", "人口密度を示す", "交通機関を示す"],
+                        correct: 1,
+                        explanation: "ハザードマップは浸水や土砂災害などのリスクがある地域を示しており、避難計画を立てる際に重要です。自分の住む地域のハザードマップを確認しましょう。"
+                    }
+                ]
+            },
+            4: {
+                category: "にげまっしアプリ",
+                questions: [
+                    {
+                        question: "にげまっしアプリの主な機能は？",
+                        options: ["ゲーム", "避難場所の検索と災害情報", "音楽再生", "写真編集"],
+                        correct: 1,
+                        explanation: "にげまっしは避難場所の検索、ハザードマップの閲覧、災害情報の通知など、防災に特化した機能を提供しています。"
+                    },
+                    {
+                        question: "アプリで確認できる情報は？",
+                        options: ["ニュース", "避難ルートとハザードマップ", "天気予報のみ", "交通情報のみ"],
+                        correct: 1,
+                        explanation: "にげまっしでは避難ルート、ハザードマップ、気象情報、避難場所の詳細情報など、防災に必要な様々な情報を確認できます。"
+                    },
+                    {
+                        question: "アプリの通知機能の目的は？",
+                        options: ["広告を表示する", "災害情報をすぐに知らせる", "友達のメッセージ", "ゲームの更新"],
+                        correct: 1,
+                        explanation: "通知機能は災害発生時や気象警報発令時に、すぐに情報を受け取ることができる重要な機能です。命を守るために通知をオンにしておきましょう。"
+                    }
+                ]
+            }
+        };
+
+        let currentQuizId = 1;
+        let currentQuiz = null;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let answeredQuestions = [];
+
+        function loadQuiz() {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentQuizId = parseInt(urlParams.get('id')) || 1;
+            
+            currentQuiz = quizDatabase[currentQuizId];
+            
+            if (!currentQuiz) {
+                alert('クイズが見つかりません');
+                window.location.href = 'user.html';
+                return;
+            }
+
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const question = currentQuiz.questions[currentQuestionIndex];
+            
+            document.getElementById('questionCategory').textContent = currentQuiz.category;
+            document.getElementById('questionNumber').textContent = currentQuestionIndex + 1;
+            document.getElementById('questionText').textContent = question.question;
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('totalQuestions').textContent = currentQuiz.questions.length;
+            
+            const progress = ((currentQuestionIndex + 1) / currentQuiz.questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressPercentage').textContent = Math.round(progress) + '%';
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = question.options.map((option, index) => `
+                <button class="option-btn" onclick="selectAnswer(${index})">
+                    ${option}
+                </button>
+            `).join('');
+            
+            document.getElementById('explanationBox').classList.remove('show');
+            document.getElementById('nextBtn').classList.remove('show');
+            selectedAnswer = null;
+        }
+
+        function selectAnswer(answerIndex) {
+            if (selectedAnswer !== null) return;
+            
+            selectedAnswer = answerIndex;
+            const question = currentQuiz.questions[currentQuestionIndex];
+            const isCorrect = answerIndex === question.correct;
+            
+            if (isCorrect) {
+                score++;
+                document.getElementById('scoreDisplay').textContent = score;
+            }
+            
+            answeredQuestions.push({
+                question: question.question,
+                userAnswer: answerIndex,
+                correctAnswer: question.correct,
+                isCorrect: isCorrect,
+                options: question.options
+            });
+            
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach((btn, index) => {
+                btn.disabled = true;
+                if (index === question.correct) {
+                    btn.classList.add('correct');
+                } else if (index === answerIndex && !isCorrect) {
+                    btn.classList.add('incorrect');
+                }
+            });
+            
+            document.getElementById('explanationText').textContent = question.explanation;
+            document.getElementById('explanationBox').classList.add('show');
+            
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.classList.add('show');
+            nextBtn.textContent = currentQuestionIndex + 1 < currentQuiz.questions.length ? '次へ →' : '結果を見る';
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex + 1 < currentQuiz.questions.length) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('quizCard').style.display = 'none';
+            
+            const resultCard = document.getElementById('resultCard');
+            resultCard.classList.add('show');
+            
+            const percentage = Math.round((score / currentQuiz.questions.length) * 100);
+            
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalTotal').textContent = currentQuiz.questions.length;
+            document.getElementById('finalPercentage').textContent = percentage;
+            
+            let message = '';
+            let icon = '🎉';
+            if (percentage >= 90) {
+                message = '完璧です！防災マスターですね！<br>この知識をぜひ周りの人にも共有してください。';
+                icon = '🏆';
+            } else if (percentage >= 70) {
+                message = '素晴らしい！よく理解できています！<br>引き続き防災意識を高く持ちましょう。';
+                icon = '🎉';
+            } else if (percentage >= 50) {
+                message = 'もう少し！復習してみましょう！<br>防災知識を深めることで、いざという時に役立ちます。';
+                icon = '💪';
+            } else {
+                message = '頑張りましょう！もう一度挑戦してみてください！<br>防災は命を守る大切な知識です。';
+                icon = '📚';
+            }
+            
+            document.getElementById('resultIcon').textContent = icon;
+            document.getElementById('resultMessage').innerHTML = message;
+            
+            const detailsList = document.getElementById('resultDetailsList');
+            detailsList.innerHTML = answeredQuestions.map((item, index) => `
+                <div class="result-item">
+                    <div class="result-item-icon">${item.isCorrect ? '✅' : '❌'}</div>
+                    <div class="result-item-content">
+                        <div class="result-item-question">問${index + 1}: ${item.question}</div>
+                        ${!item.isCorrect ? `<div class="result-item-answer">正解: ${item.options[item.correctAnswer]}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function retryQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            selectedAnswer = null;
+            answeredQuestions = [];
+            
+            document.getElementById('scoreDisplay').textContent = '0';
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('quizCard').style.display = 'block';
+            document.getElementById('resultCard').classList.remove('show');
+            
+            renderQuestion();
+        }
+
+        function backToMenu() {
+            window.location.href = 'user.html';
+        }
+
+        function quitQuiz() {
+            if (confirm('クイズを中断しますか？')) {
+                window.location.href = 'user.html';
+            }
+        }
+
+        window.addEventListener('load', loadQuiz);
+    </script>
+</body>
+</html>

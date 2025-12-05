@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>にげまっし - アンケート回答</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        }
+
+        .app-logo {
+            font-size: 64px;
+            margin-bottom: 15px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .app-title {
+            font-size: 32px;
+            color: #FF6B6B;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .survey-intro {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .importance-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #FF6B6B, #FFB347);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .progress-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .progress-percentage {
+            font-size: 18px;
+            color: #FF6B6B;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF6B6B, #FFB347);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .question-card {
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-bottom: 20px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .question-icon {
+            font-size: 32px;
+        }
+
+        .question-number {
+            color: #FF6B6B;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .question-text {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        .required {
+            color: #FF6B6B;
+            margin-left: 5px;
+        }
+
+        .question-hint {
+            background: #FFF9E6;
+            border-left: 4px solid #FFB347;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #856404;
+        }
+
+        .answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 18px 20px;
+            border: 3px solid #f0f0f0;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+        }
+
+        .option-label:hover {
+            border-color: #FFB347;
+            background: #FFF9F0;
+            transform: translateX(5px);
+        }
+
+        .option-label.selected {
+            border-color: #FF6B6B;
+            background: linear-gradient(135deg, #FFF0F0, #FFF9E6);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.2);
+        }
+
+        .option-label input[type="radio"],
+        .option-label input[type="checkbox"] {
+            margin-right: 15px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #FF6B6B;
+        }
+
+        .option-text {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .text-input,
+        .textarea-input {
+            width: 100%;
+            padding: 18px;
+            border: 3px solid #f0f0f0;
+            border-radius: 15px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .text-input:focus,
+        .textarea-input:focus {
+            outline: none;
+            border-color: #FF6B6B;
+            background: #FFF9F0;
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.1);
+        }
+
+        .textarea-input {
+            min-height: 140px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .rating-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            padding: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .rating-btn {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #f0f0f0;
+            border-radius: 15px;
+            background: white;
+            font-size: 24px;
+            font-weight: 700;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .rating-btn:hover {
+            border-color: #FFB347;
+            background: #FFF9F0;
+            transform: scale(1.1);
+        }
+
+        .rating-btn.selected {
+            border-color: #FF6B6B;
+            background: linear-gradient(135deg, #FF6B6B, #FFB347);
+            color: white;
+            transform: scale(1.15);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .rating-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 16px 35px;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-back {
+            background: #e0e0e0;
+            color: #666;
+            flex: 0 0 auto;
+        }
+
+        .btn-back:hover {
+            background: #d0d0d0;
+            transform: translateX(-3px);
+        }
+
+        .btn-next,
+        .btn-submit {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+            color: white;
+            flex: 1;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-next:hover,
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .completion-card {
+            background: white;
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .completion-icon {
+            font-size: 100px;
+            margin-bottom: 25px;
+            animation: bounce 1s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .completion-title {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .completion-text {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .completion-highlight {
+            background: linear-gradient(135deg, #FFF0F0, #FFF9E6);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0 30px;
+            border-left: 4px solid #FF6B6B;
+        }
+
+        .skip-hint {
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .header {
+                padding: 25px 20px;
+            }
+
+            .app-logo {
+                font-size: 48px;
+            }
+
+            .app-title {
+                font-size: 26px;
+            }
+
+            .question-card {
+                padding: 25px 20px;
+            }
+
+            .question-text {
+                font-size: 18px;
+            }
+
+            .button-container {
+                flex-direction: column;
+            }
+
+            .btn-back {
+                order: 2;
+            }
+
+            .btn-next,
+            .btn-submit {
+                order: 1;
+            }
+
+            .rating-container {
+                gap: 8px;
+            }
+
+            .rating-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .completion-card {
+                padding: 40px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header" id="header">
+            <div class="app-logo">🏃‍♂️</div>
+            <div class="app-title">にげまっし</div>
+            <div class="survey-intro">
+                防災アプリ「にげまっし」をご利用いただき、ありがとうございます。<br>
+                皆様の貴重なご意見をもとに、より使いやすく、より安全なアプリへと改善してまいります。
+            </div>
+            <div class="importance-badge">📋 所要時間: 約5分</div>
+        </div>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-info">
+                <div class="progress-text">
+                    質問 <span id="currentQuestion">1</span> / <span id="totalQuestions">8</span>
+                </div>
+                <div class="progress-percentage" id="progressPercentage">13%</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div id="questionContainer"></div>
+
+        <div id="completionContainer" style="display: none;">
+            <div class="completion-card">
+                <div class="completion-icon">🎉</div>
+                <div class="completion-title">ご協力ありがとうございました!</div>
+                <div class="completion-text">
+                    皆様からいただいた貴重なご意見は、<br>
+                    「にげまっし」の機能改善に活用させていただきます。
+                </div>
+                <div class="completion-highlight">
+                    <strong>🛡️ より安全で使いやすいアプリを目指して</strong><br>
+                    今後とも「にげまっし」をよろしくお願いいたします。
+                </div>
+                <button class="btn btn-submit" onclick="window.location.href='user.html'">
+                    <span>アンケート一覧へ戻る</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 【重要】ここにデプロイしたGoogle Apps Script WebアプリのURLを設定してください
+        const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzYwB9v0Hun9I2x5hz2-cfEEXH0pRphy4T2N61S_J0MGIPTFHXitCybI9cSVsd6C-jf/exec'
+
+        const surveyData = {
+            title: 'にげまっし アプリ改善アンケート',
+            id: 1,
+            questions: [
+                { id: 1, icon: '📱', type: 'radio', text: 'にげまっしを使い始めてどのくらいになりますか?', required: true, options: ['今日初めて使った', '1週間未満', '1週間〜1ヶ月', '1ヶ月〜3ヶ月', '3ヶ月〜半年', '半年以上', 'まだ使ったことがない'] },
+                { id: 2, icon: '⭐', type: 'rating', text: 'アプリの総合的な満足度を教えてください', required: true, min: 1, max: 5, minLabel: '不満', maxLabel: '大変満足' },
+                { id: 3, icon: '✨', type: 'checkbox', text: 'よく使う機能を教えてください(複数選択可)', hint: '日常的に使っている機能をすべて選択してください', required: false, options: ['避難場所の検索・確認', 'ハザードマップの閲覧', '災害情報の通知', '水害時の安全避難ガイド', '避難ルートのナビゲーション', '気象情報', '防災についてのお知らせ', '便利リンク', 'アプリをまだ使ったことがない'] },
+                { id: 4, icon: '🔔', type: 'radio', text: '通知機能の頻度について、どう感じていますか?', required: true, options: ['もっと頻繁に通知してほしい', '今のままでちょうどいい', 'もう少し減らしてほしい', '通知が多すぎる', '通知をオフにしている', 'アプリをまだ使ったことがない'] },
+                { id: 5, icon: '🎨', type: 'rating', text: 'アプリの使いやすさ(操作性・デザイン)を評価してください', required: true, min: 1, max: 5, minLabel: '使いにくい', maxLabel: '使いやすい' },
+                { id: 6, icon: '💡', type: 'checkbox', text: '追加してほしい機能があれば教えてください(複数選択可)', hint: 'あったら便利だと思う機能を選んでください', required: false, options: ['多言語対応(英語、中国語など)', 'オフラインでも使える機能の拡充', '家族や友人とのグループ機能', 'AR(拡張現実)を使った避難誘導', '避難訓練のシミュレーション', '災害体験談の共有機能', 'ペット同伴避難の情報', '要配慮者向けの特別機能', 'その他（次の質問の自由記述でお書きください）'] },
+                { id: 7, icon: '🔧', type: 'textarea', text: '改善してほしい点や不具合があれば教えてください', required: false, placeholder: '例: 地図の読み込みが遅い、避難場所の情報が古いなど、具体的にお書きください' },
+                { id: 8, icon: '💬', type: 'textarea', text: 'その他、ご意見・ご要望があればお聞かせください', required: false, placeholder: 'アプリに対するご感想や、今後期待することなど、自由にお書きください' }
+            ]
+        };
+
+        let currentQuestionIndex = 0;
+        const answers = {};
+
+        // 無意味な文字列を検出する関数
+        function isGibberish(text) {
+            if (!text || text.trim() === '') return false;
+            
+            // 1. 同じ文字が5回以上連続（例: aaaaa, 11111）
+            const repeated = /(.)\1{4,}/;
+            
+            // 2. キーボードの配列パターン（例: asdfgh, qwerty）
+            const keyboardPatterns = /(asdf|qwer|zxcv|hjkl){2,}/i;
+            
+            // 3. 極端に短い繰り返し（例: ababab, 123123123）
+            const shortRepeat = /^(.{1,3})\1{3,}$/;
+
+            const hiraganaCount = (text.match(/[\u3040-\u309F]/g) || []).length;
+            const totalLength = text.replace(/\s/g, '').length;
+            const hiraganaRatio = hiraganaCount / totalLength;
+    
+            const hasScatteredHiragana = /[\u3040-\u309F][^\u3040-\u309F]{1,2}[\u3040-\u309F]/.test(text);
+    
+            if (hiraganaRatio > 0.2 && hiraganaRatio < 0.5 && hasScatteredHiragana) {
+                return true;
+            }
+            return repeated.test(text) || keyboardPatterns.test(text) || shortRepeat.test(text);
+        }
+
+        // 自由記述欄の検証
+        function validateFreeText() {
+            const textAreas = [
+                document.getElementById('textAnswer-7'),
+                document.getElementById('textAnswer-8')
+            ];
+            
+            for (const textarea of textAreas) {
+                if (textarea && textarea.value.trim()) {
+                    if (isGibberish(textarea.value)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function renderQuestion() {
+            const question = surveyData.questions[currentQuestionIndex];
+            const container = document.getElementById('questionContainer');
+            
+            let optionsHTML = '';
+            const qId = question.id;
+            
+            if (question.type === 'radio') {
+                optionsHTML = `
+                    <div class="answer-options">
+                        ${question.options.map((option, index) => `
+                            <label class="option-label" data-option="${index}">
+                                <input type="radio" name="q${qId}" value="${option}" 
+                                    ${answers[qId] === option ? 'checked' : ''} onchange="selectOption(this, 'radio')">
+                                <span class="option-text">${option}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (question.type === 'checkbox') {
+                const selectedAnswers = answers[qId] || [];
+                optionsHTML = `
+                    <div class="answer-options">
+                        ${question.options.map((option, index) => `
+                            <label class="option-label" data-option="${index}">
+                                <input type="checkbox" name="q${qId}" value="${option}"
+                                    ${selectedAnswers.includes(option) ? 'checked' : ''} onchange="selectOption(this, 'checkbox')">
+                                <span class="option-text">${option}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (question.type === 'rating') {
+                const ratings = [];
+                for (let i = question.min; i <= question.max; i++) {
+                    ratings.push(i);
+                }
+                optionsHTML = `
+                    <div class="rating-container">
+                        ${ratings.map(num => `
+                            <button type="button" class="rating-btn ${answers[qId] === num ? 'selected' : ''}" 
+                                data-rating="${num}" onclick="selectRating(${qId}, ${num})">${num}</button>
+                        `).join('')}
+                    </div>
+                    <div class="rating-labels">
+                        <span>${question.minLabel}</span>
+                        <span>${question.maxLabel}</span>
+                    </div>
+                `;
+            } else if (question.type === 'textarea') {
+                optionsHTML = `
+                    <textarea class="textarea-input" placeholder="${question.placeholder}"
+                        id="textAnswer-${qId}">${answers[qId] || ''}</textarea>
+                `;
+            }
+            
+            const hintHTML = question.hint ? `<div class="question-hint">💡 ${question.hint}</div>` : '';
+            const skipHintHTML = !question.required ? '<div class="skip-hint">※この質問はスキップできます</div>' : '';
+
+            container.innerHTML = `
+                <div class="question-card">
+                    <div class="question-header">
+                        <div class="question-icon">${question.icon}</div>
+                        <div class="question-number">質問 ${currentQuestionIndex + 1} / ${surveyData.questions.length}</div>
+                    </div>
+                    <div class="question-text">
+                        ${question.text}
+                        ${question.required ? '<span class="required">*</span>' : ''}
+                    </div>
+                    ${hintHTML}
+                    ${optionsHTML}
+                    ${skipHintHTML}
+                </div>
+                <div class="button-container">
+                    <button type="button" class="btn btn-back" onclick="prevQuestion()" id="prevBtn"
+                        ${currentQuestionIndex === 0 ? 'disabled' : ''}>
+                        <span>← 前へ</span>
+                    </button>
+                    ${currentQuestionIndex < surveyData.questions.length - 1 
+                        ? '<button type="button" class="btn btn-next" onclick="nextQuestion()"><span>次へ →</span></button>'
+                        : '<button type="button" class="btn btn-submit" onclick="submitSurvey()"><span>回答を送信</span></button>'
+                    }
+                </div>
+            `;
+
+            updateProgress();
+        }
+
+        function selectOption(input, type) {
+            const label = input.closest('.option-label');
+            const qId = surveyData.questions[currentQuestionIndex].id;
+            
+            if (type === 'radio') {
+                document.querySelectorAll(`input[name="q${qId}"]`).forEach(inp => {
+                    inp.closest('.option-label').classList.remove('selected');
+                });
+                label.classList.add('selected');
+            } else if (type === 'checkbox') {
+                label.classList.toggle('selected', input.checked);
+            }
+        }
+
+        function selectRating(qId, ratingValue) {
+            answers[qId] = ratingValue;
+            document.querySelectorAll('.rating-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`.rating-btn[data-rating="${ratingValue}"]`).classList.add('selected');
+        }
+
+        function saveAnswer() {
+            const question = surveyData.questions[currentQuestionIndex];
+            const qId = question.id;
+            
+            if (question.type === 'radio') {
+                const selected = document.querySelector(`input[name="q${qId}"]:checked`);
+                answers[qId] = selected ? selected.value : '';
+            } else if (question.type === 'checkbox') {
+                const selected = Array.from(document.querySelectorAll(`input[name="q${qId}"]:checked`))
+                    .map(input => input.value);
+                answers[qId] = selected;
+            } else if (question.type === 'rating') {
+                // selectRating() で answers[qId] は既に保存されている
+            } else if (question.type === 'textarea') {
+                const value = document.getElementById(`textAnswer-${qId}`).value.trim();
+                answers[qId] = value;
+            }
+        }
+
+        function isAnswered(question) {
+            const qId = question.id;
+            const answer = answers[qId];
+
+            if (question.type === 'radio' || question.type === 'rating') {
+                return answer !== undefined && answer !== '';
+            } else if (question.type === 'checkbox') {
+                return Array.isArray(answer) && answer.length > 0;
+            } else if (question.type === 'textarea') {
+                return answer !== undefined && answer.trim() !== '';
+            }
+            return false;
+        }
+
+        function nextQuestion() {
+            saveAnswer();
+            const currentQ = surveyData.questions[currentQuestionIndex];
+
+            if (currentQ.required && !isAnswered(currentQ)) {
+                alert('必須項目に回答してください。');
+                return;
+            }
+            if (currentQ.type === 'textarea' && (currentQ.id === 7 || currentQ.id === 8)) {
+                const textarea = document.getElementById(`textAnswer-${currentQ.id}`);
+                if (textarea && textarea.value.trim() && isGibberish(textarea.value)) {
+                    alert('不適切な入力が検出されました。意味のある回答を入力してください。');
+                    return;
+                }
+            }    
+            
+            if (currentQuestionIndex < surveyData.questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            saveAnswer();
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+        
+        async function submitSurvey() {
+            saveAnswer();
+            
+            const unansweredRequired = surveyData.questions.filter(q => 
+                q.required && !isAnswered(q)
+            );
+            
+            if (unansweredRequired.length > 0) {
+                alert('必須項目に未回答の質問があります。');
+                currentQuestionIndex = surveyData.questions.findIndex(q => q.id === unansweredRequired[0].id);
+                renderQuestion();
+                return;
+            }
+
+            // 自由記述欄の検証（送信前に実行）
+            if (!validateFreeText()) {
+                alert('不適切な入力が検出されました。意味のある回答を入力してください。');
+                return;
+            }
+
+            const formattedAnswers = {
+                timestamp: new Date().toISOString(),
+                surveyId: surveyData.id, 
+                surveyTitle: surveyData.title,
+                ...answers
+            };
+
+            const submitBtn = document.querySelector('.btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.querySelector('span').textContent = '送信中...';
+
+            try {
+                await fetch(GAS_ENDPOINT, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formattedAnswers)
+                });
+
+                document.getElementById('questionContainer').style.display = 'none';
+                document.getElementById('header').style.display = 'none';
+                document.getElementById('progressContainer').style.display = 'none';
+                document.getElementById('completionContainer').style.display = 'block';
+
+            } catch(error) {
+                console.error('送信エラー:', error);
+                alert('回答の送信中にエラーが発生しました。インターネット接続を確認するか、時間をおいて再度お試しください。');
+                
+                submitBtn.disabled = false;
+                submitBtn.querySelector('span').textContent = '回答を送信';
+            }
+        }
+        // --- submitSurvey関数の改修はここまで ---
+
+        function updateProgress() {
+            const progress = ((currentQuestionIndex + 1) / surveyData.questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('totalQuestions').textContent = surveyData.questions.length;
+            document.getElementById('progressPercentage').textContent = Math.round(progress) + '%';
+        }
+
+        renderQuestion();
+
+        // 無意味な文字列を検出する関数
+        function isGibberish(text) {
+            if (!text || text.trim() === '') return false;
+            
+            // 1. 同じ文字が5回以上連続（例: aaaaa, 11111）
+            const repeated = /(.)\1{4,}/;
+            
+            // 2. キーボードの配列パターン（例: asdfgh, qwerty）
+            const keyboardPatterns = /(asdf|qwer|zxcv|hjkl){2,}/i;
+            
+            // 3. 極端に短い繰り返し（例: ababab, 123123123）
+            const shortRepeat = /^(.{1,3})\1{3,}$/;
+            
+            return repeated.test(text) || keyboardPatterns.test(text) || shortRepeat.test(text);
+        }
+
+        // 自由記述欄の検証
+        function validateFreeText() {
+            const textAreas = [
+                document.getElementById('textAnswer-7'),
+                document.getElementById('textAnswer-8')
+            ];
+            
+            for (const textarea of textAreas) {
+                if (textarea && textarea.value.trim()) {
+                    if (isGibberish(textarea.value)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+    </script>
+
+
+</body>
+</html>

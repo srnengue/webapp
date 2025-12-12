@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回答結果 - にげまっし</title>
+    <style>
+        /* results2.html の美しいデザインスタイルを採用 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            background: white; padding: 25px 30px; border-radius: 20px;
+            margin-bottom: 25px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .survey-title { font-size: 24px; color: #333; font-weight: 800; }
+        .back-btn {
+            background: #667eea; color: white; border: none; padding: 12px 24px;
+            border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s;
+        }
+        .back-btn:hover { background: #5568d3; transform: translateY(-2px); }
+        
+        .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .stat-card {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+            color: white; padding: 20px; border-radius: 15px; text-align: center;
+        }
+        .stat-number { font-size: 32px; font-weight: 800; margin-bottom: 5px; }
+        .stat-label { font-size: 14px; opacity: 0.9; }
+
+        .filters {
+            background: white; padding: 20px 30px; border-radius: 20px; margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); display: flex; gap: 15px; align-items: center; flex-wrap: wrap;
+        }
+        .filter-select { padding: 10px 18px; border: 3px solid #e0e0e0; border-radius: 10px; font-weight: 600; }
+        .export-btn {
+            margin-left: auto; background: #28a745; color: white; border: none;
+            padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 700;
+        }
+
+        .results-card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); }
+        .question-section { margin-bottom: 40px; }
+        .question-header {
+            display: flex; justify-content: space-between; align-items: start;
+            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid #f0f0f0;
+        }
+        .question-title { font-size: 18px; color: #333; font-weight: 700; flex: 1; }
+        .question-type {
+            background: #FFF9E6; color: #FF6B6B; padding: 6px 14px; border-radius: 20px;
+            font-size: 12px; font-weight: 700; white-space: nowrap; margin-left: 10px;
+        }
+
+        /* グラフ・バー */
+        .bar-chart { display: flex; flex-direction: column; gap: 15px; }
+        .bar-item { display: flex; align-items: center; gap: 15px; }
+        .bar-label { min-width: 180px; font-size: 14px; color: #666; font-weight: 600; }
+        .bar-wrapper { flex: 1; display: flex; align-items: center; gap: 12px; }
+        .bar { height: 35px; background: linear-gradient(90deg, #FF6B6B, #FFB347); border-radius: 8px; position: relative; width: 0; transition: width 1s ease-out; }
+        .bar-count { font-size: 14px; font-weight: 700; color: #333; min-width: 80px; }
+
+        /* テキスト回答 */
+        .text-responses { display: flex; flex-direction: column; gap: 15px; max-height: 500px; overflow-y: auto; }
+        .response-item {
+            background: #f8f9fa; padding: 18px; border-radius: 12px;
+            border-left: 4px solid #FF6B6B; transition: all 0.3s;
+        }
+        .response-item:hover { background: #FFF9F0; transform: translateX(5px); }
+        .response-meta { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px; color: #999; }
+        .response-text { color: #333; font-size: 14px; line-height: 1.7; }
+
+        /* 評価（Rating）表示 */
+        .rating-display { display: flex; justify-content: center; align-items: center; gap: 40px; padding: 30px; }
+        .rating-summary { text-align: center; }
+        .rating-average { font-size: 52px; font-weight: 800; color: #FF6B6B; }
+        .rating-bars { flex: 1; max-width: 450px; }
+        .rating-bar-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+
+        @media (max-width: 768px) {
+            .header-top { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .rating-display { flex-direction: column; gap: 20px; }
+            .bar-label { min-width: 100px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div class="survey-title" id="surveyTitle">読み込み中...</div>
+                <div style="display:flex; gap:10px;">
+                    <button class="back-btn" onclick="location.href='admin.html'">← 一覧へ</button>
+                    <button class="back-btn" style="background:#28a745;" onclick="goToAnalysis()">📈 分析へ</button>
+                </div>
+            </div>
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalResponses">-</div>
+                    <div class="stat-label">総回答数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="lastUpdated">-</div>
+                    <div class="stat-label">最終更新</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <span style="font-weight:bold; color:#666;">表示順:</span>
+            <select class="filter-select" id="sortFilter" onchange="renderResults()">
+                <option value="newest">新しい順</option>
+                <option value="oldest">古い順</option>
+            </select>
+            <button class="export-btn" onclick="exportData()">📊 CSVエクスポート</button>
+        </div>
+
+        <div class="results-card" id="resultsContainer">
+            <div style="text-align:center; padding:40px; color:#999;">データを読み込んでいます...</div>
+        </div>
+    </div>
+
+    <script>
+        // ★ここにGASのWebアプリURLを設定してください
+        const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwl8icMgU0epsqXX-uqE4KRA558xH0YECdpPp18rAhnaLqvqyDzoYJr2_cmQs7KHuoWgw/exec';
+        
+        let currentSurveyId = null;
+        let surveyData = null;
+        let responseData = [];
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search);
+            currentSurveyId = params.get('id');
+            if(!currentSurveyId) return location.href = 'admin.html';
+
+            try {
+                // GASから全データを取得
+                const res = await fetch(GAS_ENDPOINT);
+                const data = await res.json();
+                
+                // 現在のIDに一致するアンケート定義と回答を抽出
+                surveyData = data.surveys.find(s => String(s.id) === String(currentSurveyId));
+                responseData = data.responses.filter(r => String(r.surveyId) === String(currentSurveyId));
+
+                if (!surveyData) {
+                    alert('アンケートが見つかりませんでした');
+                    return;
+                }
+
+                renderHeader();
+                renderResults();
+
+            } catch(e) {
+                console.error(e);
+                document.getElementById('resultsContainer').innerHTML = '<div style="text-align:center; color:red;">データ取得エラーが発生しました</div>';
+            }
+        }
+
+        function renderHeader() {
+            document.getElementById('surveyTitle').textContent = surveyData.title;
+            document.getElementById('totalResponses').textContent = responseData.length;
+            
+            if(responseData.length > 0) {
+                const lastDate = new Date(Math.max(...responseData.map(r => new Date(r.timestamp))));
+                document.getElementById('lastUpdated').textContent = lastDate.toLocaleDateString();
+            } else {
+                document.getElementById('lastUpdated').textContent = '-';
+            }
+        }
+
+        function renderResults() {
+            const container = document.getElementById('resultsContainer');
+            
+            // ソート処理
+            const sortType = document.getElementById('sortFilter').value;
+            responseData.sort((a, b) => {
+                const dateA = new Date(a.timestamp);
+                const dateB = new Date(b.timestamp);
+                return sortType === 'newest' ? dateB - dateA : dateA - dateB;
+            });
+
+            if(responseData.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">まだ回答がありません</div>';
+                return;
+            }
+
+            // アンケート定義(surveyData.questions)に基づいて動的に描画
+            container.innerHTML = surveyData.questions.map((q, index) => {
+                const answers = responseData.map(r => r[q.id]).filter(v => v !== undefined && v !== "");
+                let contentHTML = '';
+
+                // --- A. 選択式 (Radio/Checkbox) ---
+                if (q.type === 'radio' || q.type === 'checkbox') {
+                    // 集計
+                    const counts = {};
+                    if(q.options) q.options.forEach(o => counts[o] = 0);
+                    
+                    answers.forEach(ans => {
+                        // Checkboxなどで "A | B" となっている場合の対応
+                        const parts = Array.isArray(ans) ? ans : String(ans).split(' | ');
+                        parts.forEach(p => {
+                            const trimmed = p.trim();
+                            if(trimmed) counts[trimmed] = (counts[trimmed] || 0) + 1;
+                        });
+                    });
+
+                    // グラフ用データ作成
+                    const totalVotes = Object.values(counts).reduce((a,b) => a+b, 0);
+                    const maxCount = Math.max(...Object.values(counts), 1); // 0除算防止
+
+                    contentHTML = `
+                        <div class="bar-chart">
+                            ${Object.keys(counts).map(key => {
+                                const cnt = counts[key];
+                                const percent = totalVotes > 0 ? ((cnt/totalVotes)*100).toFixed(1) : 0;
+                                const width = (cnt / maxCount) * 100;
+                                return `
+                                <div class="bar-item">
+                                    <div class="bar-label">${key}</div>
+                                    <div class="bar-wrapper">
+                                        <div class="bar" style="width: ${width}%"></div>
+                                        <div class="bar-count">${cnt}件 (${percent}%)</div>
+                                    </div>
+                                </div>`;
+                            }).join('')}
+                        </div>`;
+                }
+                // --- B. 評価式 (Rating) ---
+                else if (q.type === 'rating') {
+                    const ratings = answers.map(Number).filter(n => !isNaN(n));
+                    const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : 0;
+                    
+                    const counts = {5:0, 4:0, 3:0, 2:0, 1:0};
+                    ratings.forEach(r => counts[r] = (counts[r]||0) + 1);
+                    const maxCount = Math.max(...Object.values(counts), 1);
+
+                    contentHTML = `
+                        <div class="rating-display">
+                            <div class="rating-summary">
+                                <div class="rating-average">${avg}</div>
+                                <div class="stat-label">平均評価</div>
+                                <div style="margin-top:5px; font-size:12px; color:#999;">回答数: ${ratings.length}</div>
+                            </div>
+                            <div class="rating-bars">
+                                ${[5,4,3,2,1].map(score => {
+                                    const cnt = counts[score];
+                                    const width = (cnt/maxCount)*100;
+                                    return `
+                                    <div class="rating-bar-item">
+                                        <div style="width:30px; font-weight:bold;">⭐${score}</div>
+                                        <div class="bar-wrapper">
+                                            <div class="bar" style="width:${width}%"></div>
+                                            <div class="bar-count">${cnt}</div>
+                                        </div>
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                        </div>`;
+                }
+                // --- C. テキスト式 (Text/Textarea) ---
+                else {
+                    contentHTML = `
+                        <div class="text-responses">
+                            ${responseData.filter(r => r[q.id]).map(r => `
+                                <div class="response-item">
+                                    <div class="response-meta">
+                                        <span>📅 ${new Date(r.timestamp).toLocaleString()}</span>
+                                    </div>
+                                    <div class="response-text">${r[q.id]}</div>
+                                </div>
+                            `).join('')}
+                            ${answers.length === 0 ? '<div style="padding:10px; color:#999;">回答なし</div>' : ''}
+                        </div>`;
+                }
+
+                return `
+                    <div class="question-section">
+                        <div class="question-header">
+                            <div class="question-title">Q${index+1}. ${q.text}</div>
+                            <div class="question-type">${getTypeLabel(q.type)}</div>
+                        </div>
+                        ${contentHTML}
+                    </div>`;
+            }).join('');
+            
+            // バーのアニメーション用（描画後にwidthを適用）
+            setTimeout(() => {
+                document.querySelectorAll('.bar').forEach(bar => {
+                    const finalWidth = bar.style.width;
+                    bar.style.width = '0%';
+                    requestAnimationFrame(() => bar.style.width = finalWidth);
+                });
+            }, 100);
+        }
+
+        function getTypeLabel(type) {
+            const map = { 'text':'自由記述', 'textarea':'長文', 'radio':'単一選択', 'checkbox':'複数選択', 'rating':'評価' };
+            return map[type] || type;
+        }
+
+        function goToAnalysis() {
+            location.href = `analysis.html?id=${currentSurveyId}`;
+        }
+
+        function exportData() {
+            alert('CSVダウンロード機能は実装予定です');
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

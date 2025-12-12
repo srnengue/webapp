@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ホーム - にげまっし</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .header {
+            background: white; padding: 25px 30px; border-radius: 20px;
+            margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            animation: slideDown 0.5s ease-out;
+        }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .header-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-logo { font-size: 48px; animation: bounce 2s ease-in-out infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .header-text h1 { color: #FF6B6B; font-size: 28px; font-weight: 800; margin-bottom: 5px; }
+        .header-subtitle { color: #666; font-size: 14px; }
+        
+        .header-actions { display: flex; gap: 10px; }
+        
+        .back-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; padding: 12px 24px; border-radius: 12px;
+            cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s;
+        }
+        .back-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        
+        .quiz-header-btn {
+            background: linear-gradient(135deg, #FFB347 0%, #FF6B6B 100%);
+            color: white; border: none; padding: 12px 24px; border-radius: 12px;
+            cursor: pointer; font-size: 14px; font-weight: 700; transition: all 0.3s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .quiz-header-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4); }
+
+        .register-btn {
+            background: white; color: #FF6B6B; border: 3px solid #FF6B6B; padding: 12px 24px;
+            border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 700; transition: all 0.3s;
+        }
+        .register-btn:hover { background: #FF6B6B; color: white; transform: translateY(-2px); }
+        
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .section-title {
+            color: white; font-size: 24px; font-weight: 800; margin: 40px 0 20px 0; text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .intro-card {
+            background: white; padding: 25px 30px; border-radius: 20px;
+            margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); border-left: 6px solid #FF6B6B;
+        }
+        .intro-title { font-size: 18px; color: #333; font-weight: 700; margin-bottom: 10px; }
+        .intro-text { font-size: 14px; color: #666; line-height: 1.7; }
+        
+        .survey-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        
+        .survey-card {
+            background: white; border-radius: 20px; padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer; position: relative; overflow: hidden; animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .survey-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px;
+            background: linear-gradient(90deg, #FF6B6B, #FFB347);
+        }
+        .survey-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 50px rgba(255, 107, 107, 0.3); }
+        
+        .survey-icon { font-size: 56px; margin-bottom: 15px; display: block; }
+        .survey-title { color: #333; font-size: 22px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; }
+        .survey-description { color: #666; font-size: 14px; line-height: 1.7; margin-bottom: 20px; min-height: 60px; }
+        .survey-meta {
+            display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #999;
+            margin-bottom: 20px; padding: 15px 0; border-top: 2px solid #f0f0f0; border-bottom: 2px solid #f0f0f0; font-weight: 600;
+        }
+        .survey-meta-item { display: flex; align-items: center; gap: 5px; }
+        .survey-badges { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        
+        .survey-status { display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .status-active { background: linear-gradient(135deg, #d4edda, #c3e6cb); color: #155724; }
+        
+        .priority-badge {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7); color: #856404;
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+        }
+
+        .start-btn {
+            width: 100%; padding: 16px; background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+            color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .start-btn::before {
+            content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3); transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s;
+        }
+        .start-btn:hover::before { width: 300px; height: 300px; }
+        .start-btn:hover { transform: scale(1.05); box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4); }
+        .start-btn span { position: relative; z-index: 1; }
+        
+        .empty-state {
+            background: white; border-radius: 20px; padding: 80px 40px; text-align: center; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+        @media (max-width: 768px) {
+            .header-content { flex-direction: column; align-items: flex-start; }
+            .header-actions { width: 100%; flex-wrap: wrap; }
+            .back-btn, .quiz-header-btn, .register-btn { flex: 1; }
+            .survey-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="header-logo">🏃‍♂️</div>
+                    <div class="header-text">
+                        <h1>にげまっし ホーム</h1>
+                        <div class="header-subtitle">防災アプリ改善プロジェクト</div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="back-btn" onclick="goBack()">← 戻る</button>
+                    <button class="quiz-header-btn" onclick="scrollToQuizzes()">
+                        <span>🎯</span>
+                        <span>防災クイズ</span>
+                    </button>
+                    <button class="register-btn" onclick="goToRegister()">📝 新規登録</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="intro-card">
+            <div class="intro-title">🙏 ご協力のお願い</div>
+            <div class="intro-text">
+                防災アプリ「にげまっし」をご利用いただき、ありがとうございます。
+                皆様のご意見を聞く「アンケート」と、防災知識を学べる「クイズ」をご用意しました。
+            </div>
+        </div>
+
+        <h2 class="section-title">📝 アンケート</h2>
+        <div id="surveyList" class="survey-grid"></div>
+
+        <h2 class="section-title">🎯 防災クイズ</h2>
+        <div id="quizList" class="survey-grid"></div>
+    </div>
+
+    <script>
+    // ★ここにGASのWebアプリURLを設定してください
+    const GAS_ENDPOINT_GET = 'https://script.google.com/macros/s/AKfycbwl8icMgU0epsqXX-uqE4KRA558xH0YECdpPp18rAhnaLqvqyDzoYJr2_cmQs7KHuoWgw/exec';
+
+    // クイズデータ（固定）
+    const quizzes = [
+        {
+            id: 1, icon: '🛡️', title: '防災の基本クイズ',
+            description: '災害時の基本的な行動について学びましょう',
+            questions: 3, estimatedTime: '約2分'
+        },
+        {
+            id: 2, icon: '🏠', title: '避難所に関するクイズ',
+            description: '避難所での過ごし方や準備について',
+            questions: 3, estimatedTime: '約2分'
+        },
+        {
+            id: 3, icon: '📡', title: '災害情報の取得方法',
+            description: '正確な情報を得るための知識',
+            questions: 3, estimatedTime: '約2分'
+        },
+        {
+            id: 4, icon: '📱', title: 'アプリ機能クイズ',
+            description: 'にげまっしアプリの便利な機能について',
+            questions: 3, estimatedTime: '約2分'
+        }
+    ];
+
+    async function renderSurveys() {
+        const surveyList = document.getElementById('surveyList');
+        surveyList.innerHTML = '<div style="text-align:center; padding:40px;">読み込み中...</div>';
+
+        try {
+            const response = await fetch(GAS_ENDPOINT_GET);
+            const data = await response.json();
+            const activeSurveys = data.surveys.filter(s => s.status === 'active');
+
+            if (activeSurveys.length === 0) {
+                surveyList.innerHTML = '<div class="empty-state">現在公開中のアンケートはありません</div>';
+                return;
+            }
+
+            activeSurveys.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            surveyList.innerHTML = activeSurveys.map(survey => {
+                return `
+                <div class="survey-card" onclick="selectSurvey('${survey.id}')">
+                    <div class="survey-icon">📝</div>
+                    <div class="survey-title">${survey.title}</div>
+                    <div class="survey-description">${survey.description || ''}</div>
+                    <div class="survey-meta">
+                        <div class="survey-meta-item"><span>📊</span><span>${survey.questions.length}問</span></div>
+                        <div class="survey-meta-item"><span>⏱️</span><span>約5分</span></div>
+                    </div>
+                    <div class="survey-badges">
+                        <span class="survey-status status-active">📝 回答可能</span>
+                    </div>
+                    <button class="start-btn">
+                        <span>回答を開始 →</span>
+                    </button>
+                </div>`;
+            }).join('');
+
+        } catch (e) {
+            surveyList.innerHTML = '読み込みエラーが発生しました。';
+        }
+    }
+
+    function renderQuizzes() {
+        const quizList = document.getElementById('quizList');
+        quizList.innerHTML = quizzes.map((quiz, index) => `
+            <div class="survey-card" onclick="selectQuiz(${quiz.id})" style="animation-delay: ${index * 0.1}s">
+                <div class="survey-icon">${quiz.icon}</div>
+                <div class="survey-title">${quiz.title}</div>
+                <div class="survey-description">${quiz.description}</div>
+                <div class="survey-meta">
+                    <div class="survey-meta-item"><span>📊</span><span>${quiz.questions}問</span></div>
+                    <div class="survey-meta-item"><span>⏱️</span><span>${quiz.estimatedTime}</span></div>
+                </div>
+                <div class="survey-badges">
+                    <span class="survey-status status-active" style="background: linear-gradient(135deg, #ffeaa7, #fab1a0); color:#d35400;">🎯 挑戦可能</span>
+                    <span class="priority-badge">⭐ おすすめ</span>
+                </div>
+                <button class="start-btn" onclick="event.stopPropagation(); selectQuiz(${quiz.id})">
+                    <span>クイズに挑戦 →</span>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function selectSurvey(id) {
+        window.location.href = `survey.html?id=${id}`;
+    }
+
+    function selectQuiz(id) {
+        window.location.href = `quiz-play.html?id=${id}`;
+    }
+
+    function goBack() { window.location.href = 'index.html'; }
+    function goToRegister() { window.location.href = 'register.html'; }
+    function scrollToQuizzes() {
+        document.getElementById('quizList').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    window.addEventListener('load', () => {
+        renderSurveys();
+        renderQuizzes();
+    });
+</script>
+</body>
+</html>

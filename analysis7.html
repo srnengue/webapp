@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分析レポート - にげまっし</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/build/kuromoji.js"></script>
+    <style>
+        /* analysis2.html のデザインを採用 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header {
+            background: white; padding: 25px 30px; border-radius: 20px;
+            margin-bottom: 25px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .header-title { font-size: 24px; color: #333; font-weight: 800; }
+        .back-btn {
+            background: #667eea; color: white; border: none; padding: 12px 24px;
+            border-radius: 12px; cursor: pointer; font-weight: 600; transition: all 0.3s;
+        }
+        .back-btn:hover { background: #5568d3; transform: translateY(-2px); }
+
+        .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .insight-card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); }
+        .insight-icon { font-size: 40px; margin-bottom: 10px; }
+        .insight-title { font-size: 16px; color: #666; margin-bottom: 5px; font-weight: 600; }
+        .insight-value { font-size: 36px; font-weight: 800; color: #FF6B6B; }
+        .insight-desc { font-size: 13px; color: #999; margin-top: 5px; }
+
+        .analysis-section { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); margin-bottom: 25px; }
+        .section-title {
+            font-size: 20px; color: #333; font-weight: 800; margin-bottom: 20px;
+            padding-bottom: 15px; border-bottom: 3px solid #f0f0f0;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        /* トレンドチャート */
+        .chart-container { position: relative; height: 300px; }
+
+        /* キーワードクラウド */
+        .keywords-cloud { display: flex; flex-wrap: wrap; gap: 12px; padding: 20px; background: #f8f9fa; border-radius: 15px; min-height: 100px; }
+        .keyword-tag {
+            padding: 8px 16px; background: white; border: 2px solid #FF6B6B; border-radius: 20px;
+            font-weight: 700; color: #FF6B6B; cursor: default; transition: 0.3s;
+        }
+        .keyword-tag:hover { background: #FF6B6B; color: white; transform: scale(1.05); }
+
+        /* 感情分析 */
+        .sentiment-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: center; }
+        .sentiment-item { background: #f8f9fa; padding: 20px; border-radius: 15px; }
+        .sentiment-emoji { font-size: 40px; margin-bottom: 10px; }
+        .sentiment-val { font-size: 28px; font-weight: 800; color: #333; }
+
+        .loading { text-align: center; padding: 50px; color: white; font-size: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loading" class="loading">🔄 データを分析中...</div>
+
+        <div id="mainContent" style="display:none;">
+            <div class="header">
+                <div class="header-title" id="pageTitle">分析レポート</div>
+                <div style="display:flex; gap:10px;">
+                    <button class="back-btn" onclick="location.href='admin.html'">← 一覧へ</button>
+                    <button class="back-btn" style="background:#28a745;" onclick="goToResults()">📋 結果へ</button>
+                </div>
+            </div>
+
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-icon">👥</div>
+                    <div class="insight-title">総回答数</div>
+                    <div class="insight-value" id="totalResp">-</div>
+                    <div class="insight-desc">集計対象の全データ</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-icon">⭐</div>
+                    <div class="insight-title">平均満足度</div>
+                    <div class="insight-value" id="avgScore">-</div>
+                    <div class="insight-desc">評価項目の全平均</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-icon">🔥</div>
+                    <div class="insight-title">ホットトピック</div>
+                    <div class="insight-value" style="font-size:24px;" id="topKeyword">-</div>
+                    <div class="insight-desc">最も言及されたキーワード</div>
+                </div>
+            </div>
+
+            <div class="analysis-section">
+                <div class="section-title"><span>📈</span>回答推移トレンド</div>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="analysis-section">
+                <div class="section-title"><span>😊</span>感情分析 (スコアベース推定)</div>
+                <div class="sentiment-grid">
+                    <div class="sentiment-item">
+                        <div class="sentiment-emoji">😊</div>
+                        <div>ポジティブ</div>
+                        <div class="sentiment-val" id="sentPos">-</div>
+                    </div>
+                    <div class="sentiment-item">
+                        <div class="sentiment-emoji">😐</div>
+                        <div>中立</div>
+                        <div class="sentiment-val" id="sentNeu">-</div>
+                    </div>
+                    <div class="sentiment-item">
+                        <div class="sentiment-emoji">😔</div>
+                        <div>ネガティブ</div>
+                        <div class="sentiment-val" id="sentNeg">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="analysis-section">
+                <div class="section-title"><span>🏷️</span>頻出キーワード (AI分析)</div>
+                <div class="keywords-cloud" id="keywordsCloud">
+                    <div style="color:#999; width:100%; text-align:center;">分析中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ★ここにGASのWebアプリURLを設定してください
+        const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwl8icMgU0epsqXX-uqE4KRA558xH0YECdpPp18rAhnaLqvqyDzoYJr2_cmQs7KHuoWgw/exec';
+        
+        let currentId = null;
+        let chartInstance = null;
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search);
+            currentId = params.get('id');
+            if(!currentId) return location.href = 'admin.html';
+
+            try {
+                const res = await fetch(GAS_ENDPOINT);
+                const data = await res.json();
+                
+                const survey = data.surveys.find(s => String(s.id) === String(currentId));
+                const responses = data.responses.filter(r => String(r.surveyId) === String(currentId));
+
+                if(!survey || responses.length === 0) {
+                    alert('データがないか、取得できませんでした。');
+                    location.href = 'admin.html';
+                    return;
+                }
+
+                // 画面表示切り替え
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+
+                renderDashboard(survey, responses);
+                renderTrend(survey, responses);
+                renderSentiment(survey, responses);
+                analyzeKeywords(survey, responses);
+
+            } catch(e) {
+                console.error(e);
+                alert('分析エラーが発生しました');
+            }
+        }
+
+        function goToResults() {
+            location.href = `results.html?id=${currentId}`;
+        }
+
+        // 1. ダッシュボード（基本数値）
+        function renderDashboard(survey, responses) {
+            document.getElementById('pageTitle').textContent = `📊 ${survey.title} - 分析`;
+            document.getElementById('totalResp').textContent = responses.length;
+
+            // 「評価(rating)」タイプの質問をすべて抽出して平均を出す
+            const ratingQs = survey.questions.filter(q => q.type === 'rating');
+            if(ratingQs.length > 0) {
+                let total = 0;
+                let count = 0;
+                responses.forEach(r => {
+                    ratingQs.forEach(q => {
+                        const val = Number(r[q.id]);
+                        if(!isNaN(val) && val > 0) {
+                            total += val;
+                            count++;
+                        }
+                    });
+                });
+                const avg = count ? (total / count).toFixed(1) : '-';
+                document.getElementById('avgScore').innerHTML = `${avg}<span style="font-size:18px; color:#999;">/5.0</span>`;
+            } else {
+                document.getElementById('avgScore').textContent = '-';
+                document.querySelector('.insight-desc').textContent = '評価形式の質問がありません';
+            }
+        }
+
+        // 2. トレンドグラフ
+        function renderTrend(survey, responses) {
+            const ctx = document.getElementById('trendChart');
+            const dateMap = {};
+            
+            responses.forEach(r => {
+                const d = new Date(r.timestamp).toLocaleDateString();
+                dateMap[d] = (dateMap[d] || 0) + 1;
+            });
+
+            const labels = Object.keys(dateMap).sort((a,b) => new Date(a) - new Date(b));
+            const data = labels.map(d => dateMap[d]);
+
+            if(chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '回答数',
+                        data: data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
+        }
+
+        // 3. 感情分析（評価スコアの分布から推測）
+        function renderSentiment(survey, responses) {
+            const ratingQs = survey.questions.filter(q => q.type === 'rating');
+            
+            if(ratingQs.length === 0) {
+                ['sentPos','sentNeu','sentNeg'].forEach(id => document.getElementById(id).textContent = '-');
+                return;
+            }
+
+            let pos=0, neu=0, neg=0, total=0;
+            
+            // 各回答者の全評価項目の平均を取って判定
+            responses.forEach(r => {
+                let userTotal = 0, userCount = 0;
+                ratingQs.forEach(q => {
+                    const v = Number(r[q.id]);
+                    if(v) { userTotal += v; userCount++; }
+                });
+
+                if(userCount > 0) {
+                    const userAvg = userTotal / userCount;
+                    if(userAvg >= 4) pos++;
+                    else if(userAvg >= 3) neu++;
+                    else neg++;
+                    total++;
+                }
+            });
+
+            if(total > 0) {
+                document.getElementById('sentPos').textContent = Math.round((pos/total)*100) + '%';
+                document.getElementById('sentNeu').textContent = Math.round((neu/total)*100) + '%';
+                document.getElementById('sentNeg').textContent = Math.round((neg/total)*100) + '%';
+            }
+        }
+
+        // 4. キーワード分析 (Kuromoji - 動的質問対応版)
+        function analyzeKeywords(survey, responses) {
+            const container = document.getElementById('keywordsCloud');
+            
+            // テキストまたはテキストエリア形式の質問をすべて対象にする
+            const textQs = survey.questions.filter(q => q.type === 'text' || q.type === 'textarea');
+            
+            if(textQs.length === 0) {
+                container.innerHTML = '<div style="color:#999;">テキスト形式の質問がありません</div>';
+                document.getElementById('topKeyword').textContent = '-';
+                return;
+            }
+
+            // 全テキストを結合
+            let allText = "";
+            responses.forEach(r => {
+                textQs.forEach(q => {
+                    if(r[q.id]) allText += r[q.id] + "\n";
+                });
+            });
+
+            if(!allText.trim()) {
+                container.innerHTML = '<div style="color:#999;">テキストデータが十分にありません</div>';
+                document.getElementById('topKeyword').textContent = '-';
+                return;
+            }
+
+            // Kuromoji辞書のロードと解析
+            const DIC_URL = "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict/";
+            
+            kuromoji.builder({ dicPath: DIC_URL }).build((err, tokenizer) => {
+                if(err) {
+                    console.error(err);
+                    container.innerHTML = '辞書のロードに失敗しました';
+                    return;
+                }
+
+                const tokens = tokenizer.tokenize(allText);
+                const counts = {};
+                // 除外ワード設定
+                const stopWords = new Set([
+                    'こと','もの','よう','それ','これ','さん','の','て','に','を','は','が','です','ます',
+                    'アプリ','機能','利用','使用','お願い','改善','確認','表示','設定','感じ','場合'
+                ]);
+
+                tokens.forEach(t => {
+                    // 名詞かつ2文字以上、かつひらがなのみの場合は4文字以上（「いろいろ」などを弾く簡易フィルタ）
+                    const word = t.surface_form;
+                    if(t.pos === '名詞' && word.length > 1 && !stopWords.has(word)) {
+                        // アルファベットのみは除外（IDなどを弾く）
+                        if(!/^[a-zA-Z]+$/.test(word)) {
+                            counts[word] = (counts[word] || 0) + 1;
+                        }
+                    }
+                });
+
+                const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 15);
+                
+                if(sorted.length > 0) {
+                    // トップキーワードをダッシュボードに反映
+                    document.getElementById('topKeyword').textContent = sorted[0][0];
+
+                    container.innerHTML = sorted.map(([word, cnt]) => {
+                        const size = Math.min(1.5, 1 + (cnt * 0.1)) + 'em';
+                        return `<span class="keyword-tag" style="font-size:${size}">${word} <span style="font-size:0.7em; opacity:0.7;">(${cnt})</span></span>`;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<div style="color:#999;">キーワードが見つかりませんでした</div>';
+                    document.getElementById('topKeyword').textContent = '-';
+                }
+            });
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

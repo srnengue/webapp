@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アンケート作成 - にげまっし</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            font-size: 32px;
+        }
+
+        .header-title {
+            font-size: 24px;
+            color: #333;
+            font-weight: 800;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .form-section {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #f0f0f0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .required {
+            color: #FF6B6B;
+            margin-left: 3px;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #FF6B6B;
+            background: #FFF9F0;
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .questions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .question-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border: 3px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .question-card:hover {
+            border-color: #FF6B6B;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.15);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .question-number {
+            font-size: 16px;
+            font-weight: 700;
+            color: #FF6B6B;
+        }
+
+        .question-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            border-color: #FF6B6B;
+            background: #FFF9F0;
+            transform: scale(1.1);
+        }
+
+        .icon-btn.delete:hover {
+            border-color: #ff5252;
+            background: #fff5f5;
+        }
+
+        .options-list {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-item {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .option-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .option-input:focus {
+            outline: none;
+            border-color: #FF6B6B;
+            background: #FFF9F0;
+        }
+
+        .remove-option-btn {
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+
+        .remove-option-btn:hover {
+            background: #ff5252;
+            transform: scale(1.1);
+        }
+
+        .add-option-btn {
+            background: white;
+            color: #FF6B6B;
+            border: 2px dashed #FF6B6B;
+            padding: 12px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .add-option-btn:hover {
+            background: #FFF9F0;
+            transform: scale(1.02);
+        }
+
+        .add-question-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .add-question-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 18px;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #FF6B6B;
+        }
+
+        .checkbox-group label {
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <div class="header-logo">🏃‍♂️</div>
+                <div class="header-title">新規アンケート作成</div>
+            </div>
+            <button class="back-btn" onclick="goBack()">← 戻る</button>
+        </div>
+
+        <div class="form-section">
+            <div class="section-title">基本情報</div>
+            
+            <div class="form-group">
+                <label class="form-label">アンケートタイトル<span class="required">*</span></label>
+                <input type="text" class="form-input" id="surveyTitle" placeholder="例: にげまっし アプリ改善アンケート">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">説明文</label>
+                <textarea class="form-textarea" id="surveyDescription" placeholder="アンケートの目的や内容について簡単に説明してください"></textarea>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="section-title">質問設定</div>
+            
+            <div class="questions-container" id="questionsContainer"></div>
+
+            <button class="add-question-btn" onclick="addQuestion()">
+                <span>➕</span>
+                <span>質問を追加</span>
+            </button>
+        </div>
+
+        <div class="form-section">
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="saveDraft()">下書き保存</button>
+                <button class="btn btn-primary" onclick="publishSurvey()">公開する</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ★ここに手順1でコピーしたGASのURLを貼ってください
+    const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwl8icMgU0epsqXX-uqE4KRA558xH0YECdpPp18rAhnaLqvqyDzoYJr2_cmQs7KHuoWgw/exec';
+
+    let questions = [];
+    let questionIdCounter = 1;
+
+    const questionTypes = [
+        { value: 'radio', label: '単一選択', icon: '🔘' },
+        { value: 'checkbox', label: '複数選択', icon: '☑️' },
+        { value: 'text', label: 'テキスト入力', icon: '📝' },
+        { value: 'textarea', label: '長文入力', icon: '📄' },
+        { value: 'rating', label: '評価(5段階)', icon: '⭐' }
+    ];
+
+    function addQuestion() {
+        const question = {
+            id: questionIdCounter++,
+            type: 'radio',
+            text: '',
+            required: true,
+            options: ['選択肢1', '選択肢2']
+        };
+        questions.push(question);
+        renderQuestions();
+    }
+
+    function removeQuestion(id) {
+        if (confirm('この質問を削除しますか?')) {
+            questions = questions.filter(q => q.id !== id);
+            renderQuestions();
+        }
+    }
+
+    function updateQuestionType(id, type) {
+        const question = questions.find(q => q.id === id);
+        if (question) {
+            question.type = type;
+            if (type === 'radio' || type === 'checkbox') {
+                if (!question.options || question.options.length === 0) {
+                    question.options = ['選択肢1', '選択肢2'];
+                }
+            } else {
+                question.options = [];
+            }
+            renderQuestions();
+        }
+    }
+
+    function updateQuestionText(id, text) {
+        const question = questions.find(q => q.id === id);
+        if (question) question.text = text;
+    }
+
+    function updateQuestionRequired(id, required) {
+        const question = questions.find(q => q.id === id);
+        if (question) question.required = required;
+    }
+
+    function addOption(questionId) {
+        const question = questions.find(q => q.id === questionId);
+        if (question) {
+            question.options.push(`選択肢${question.options.length + 1}`);
+            renderQuestions();
+        }
+    }
+
+    function removeOption(questionId, optionIndex) {
+        const question = questions.find(q => q.id === questionId);
+        if (question && question.options.length > 2) {
+            question.options.splice(optionIndex, 1);
+            renderQuestions();
+        } else {
+            alert('選択肢は最低2つ必要です。');
+        }
+    }
+
+    function updateOption(questionId, optionIndex, value) {
+        const question = questions.find(q => q.id === questionId);
+        if (question) question.options[optionIndex] = value;
+    }
+
+    function renderQuestions() {
+        const container = document.getElementById('questionsContainer');
+        if (questions.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">質問を追加してアンケートを作成しましょう</div>';
+            return;
+        }
+
+        container.innerHTML = questions.map((question, index) => {
+            const typeOptions = questionTypes.map(type => 
+                `<option value="${type.value}" ${question.type === type.value ? 'selected' : ''}>${type.icon} ${type.label}</option>`
+            ).join('');
+
+            let optionsHTML = '';
+            if (question.type === 'radio' || question.type === 'checkbox') {
+                optionsHTML = `
+                    <div class="options-list">
+                        ${question.options.map((option, optIndex) => `
+                            <div class="option-item">
+                                <input type="text" class="option-input" value="${option}"
+                                    onchange="updateOption(${question.id}, ${optIndex}, this.value)" placeholder="選択肢を入力">
+                                ${question.options.length > 2 ? `<button class="remove-option-btn" onclick="removeOption(${question.id}, ${optIndex})">×</button>` : ''}
+                            </div>
+                        `).join('')}
+                        <button class="add-option-btn" onclick="addOption(${question.id})">+ 選択肢を追加</button>
+                    </div>`;
+            }
+
+            return `
+                <div class="question-card">
+                    <div class="question-header">
+                        <div class="question-number">質問 ${index + 1}</div>
+                        <div class="question-actions"><button class="icon-btn delete" onclick="removeQuestion(${question.id})">🗑️</button></div>
+                    </div>
+                    <div class="form-group"><label class="form-label">質問タイプ</label><select class="form-select" onchange="updateQuestionType(${question.id}, this.value)">${typeOptions}</select></div>
+                    <div class="form-group"><label class="form-label">質問文<span class="required">*</span></label><input type="text" class="form-input" value="${question.text}" onchange="updateQuestionText(${question.id}, this.value)"></div>
+                    ${optionsHTML}
+                    <div class="checkbox-group"><input type="checkbox" id="required-${question.id}" ${question.required ? 'checked' : ''} onchange="updateQuestionRequired(${question.id}, this.checked)"><label for="required-${question.id}">必須回答</label></div>
+                </div>`;
+        }).join('');
+    }
+
+    function validateSurvey() {
+        const title = document.getElementById('surveyTitle').value.trim();
+        if (!title) { alert('アンケートタイトルを入力してください。'); return false; }
+        if (questions.length === 0) { alert('質問を少なくとも1つ追加してください。'); return false; }
+        return true;
+    }
+
+    function publishSurvey() {
+        if (!validateSurvey()) return;
+
+        const btn = document.querySelector('.btn-primary');
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = '公開中...';
+
+        const surveyData = {
+            action: 'createSurvey', // GASへ「作成」だと伝える
+            title: document.getElementById('surveyTitle').value.trim(),
+            description: document.getElementById('surveyDescription').value.trim(),
+            questions: questions,
+            status: 'active'
+        };
+
+        fetch(GAS_ENDPOINT, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(surveyData)
+        })
+        .then(() => {
+            alert('アンケートを公開しました！');
+            window.location.href = 'admin.html';
+        })
+        .catch(err => {
+            alert('エラーが発生しました');
+            btn.disabled = false;
+            btn.textContent = originalText;
+        });
+    }
+
+    function saveDraft() {
+        alert('下書き機能は簡易実装のため、今回は「公開」のみ動作します。');
+    }
+
+    function goBack() {
+        window.location.href = 'admin.html';
+    }
+
+    // 初期化
+    renderQuestions();
+</script>
+</body>
+</html>
